@@ -1,0 +1,122 @@
+#pragma kernel StyleTransfer
+
+Texture2D<float4> _SourceTex;
+RWTexture2D<float4> _ResultTex;
+float _Intensity;
+float _Time;
+
+// Voronoi noise for cosmic patterns
+float2 random2(float2 p)
+{
+    return frac(sin(float2(dot(p,float2(127.1,311.7)),dot(p,float2(269.5,183.3))))*43758.5453);
+}
+
+float voronoi(float2 x)
+{
+    float2 n = floor(x);
+    float2 f = frac(x);
+
+    float minDist = 8.0;
+    for(int j=-1; j<=1; j++)
+    {
+        for(int i=-1; i<=1; i++)
+        {
+            float2 rnd = random2(n + float2(i,j));
+            rnd = 0.5 + 0.5*sin(_Time*0.5 + 6.2831*rnd);
+            float dist = length(float2(i,j) + rnd - f);
+            minDist = min(minDist, dist);
+        }
+    }
+    return minDist;
+}
+
+float3 ApplyCosmicEffect(float3 color, uint2 id, uint2 texSize, float intensity)
+{
+    float2 uv = float2(id) / float2(texSize);
+    
+    // Create cosmic void effect
+    float2 voidUV = uv * 3.0 + _Time * 0.1;
+    float void = voronoi(voidUV);
+    void = pow(void, 2.0);
+    
+    // Create non-euclidean patterns
+    float pattern1 = voronoi(uv * 5.0 - _Time * 0.2);
+    float pattern2 = voronoi(uv * 7.0 + _Time * 0.3);
+    float pattern3 = voronoi(uv * 9.0 - _Time * 0.1);
+    
+    // Cosmic color manipulation
+    float3 cosmicColor = float3(
+        pattern1 * 0.5 + 0.2,
+        pattern2 * 0.3 + 0.1,
+        pattern3 * 0.7 + 0.3
+    );
+    
+    // Apply void effect
+    float3 result = lerp(color, float3(0.02, 0.01, 0.03), void * intensity);
+    
+    // Add cosmic patterns
+    result = lerp(result, cosmicColor, pattern1 * intensity * 0.4);
+    
+    // Create tentacle-like formations
+    float tentacles = 0.0;
+    for(int i = 0; i < 5; i++)
+    {
+        float angle = float(i) / 5.0 * 6.28318 + _Time * 0.2;
+        float2 dir = float2(cos(angle), sin(angle));
+        float dist = dot(uv - 0.5, dir);
+        tentacles += smoothstep(0.1, 0.0, abs(dist) - 0.1 * (sin(_Time + float(i)) * 0.5 + 0.5));
+    }
+    result = lerp(result, float3(0.5, 0.0, 0.5), tentacles * intensity * 0.3);
+    
+    // Add ethereal glow
+    float2 glowUV = uv * 2.0 - 1.0;
+    float glow = 1.0 - length(glowUV);
+    glow = pow(max(0.0, glow), 3.0);
+    float3 glowColor = float3(0.1, 0.0, 0.2) * glow;
+    result += glowColor * intensity;
+    
+    // Reality-bending distortion
+    float distortion = sin(uv.x * 10.0 + _Time) * cos(uv.y * 8.0 + _Time * 0.7);
+    result = lerp(result, result.gbr, distortion * intensity * 0.2);
+    
+    // Add cosmic dust
+    float dust = frac(sin(dot(uv, float2(12.9898,78.233)) + _Time) * 43758.5453);
+    result += float3(dust, dust * 0.5, dust * 0.8) * intensity * 0.1;
+    
+    // Add void rifts
+    float rift = step(0.98 - intensity * 0.1, pattern2);
+    result = lerp(result, float3(0.0, 0.0, 0.0), rift);
+    
+    // Add eldritch symbols
+    float symbols = step(0.95, frac(voronoi(uv * 20.0 + _Time * 0.1)));
+    result = lerp(result, float3(0.7, 0.0, 0.7), symbols * intensity * 0.5);
+    
+    // Apply color aberration
+    float aberration = sin(_Time * 0.5) * 0.01 * intensity;
+    float3 aberrationColor;
+    aberrationColor.r = result.r;
+    aberrationColor.g = lerp(result.g, result.b, aberration);
+    aberrationColor.b = lerp(result.b, result.r, -aberration);
+    result = aberrationColor;
+    
+    return result;
+}
+
+[numthreads(8,8,1)]
+void StyleTransfer(uint3 id : SV_DispatchThreadID)
+{
+    uint2 texSize;
+    _ResultTex.GetDimensions(texSize.x, texSize.y);
+    
+    if (id.x >= texSize.x || id.y >= texSize.y)
+        return;
+
+    // Get original color
+    float4 originalColor = _SourceTex[id.xy];
+    
+    // Apply cosmic horror effect
+    float3 final = ApplyCosmicEffect(originalColor.rgb, id.xy, texSize, _Intensity);
+    
+    // Store result
+    _ResultTex[id.xy] = float4(final, originalColor.a);
+}

@@ -1,0 +1,93 @@
+#pragma kernel StyleTransfer
+
+Texture2D<float4> _SourceTex;
+RWTexture2D<float4> _ResultTex;
+float _Intensity;
+float _Time;
+
+static const float3x3 DARK_CONTRAST_KERNEL = {
+    -0.5, -0.5, -0.5,
+    -0.5,  5.0, -0.5,
+    -0.5, -0.5, -0.5
+};
+
+static const float3x3 SHADOW_EMPHASIS_KERNEL = {
+    0.1,  0.1,  0.1,
+    0.1,  1.2,  0.1,
+    0.1,  0.1,  0.1
+};
+
+float3 ApplyKernel(float3x3 kernel, uint2 id, uint2 texSize)
+{
+    float3 result = float3(0, 0, 0);
+    
+    for (int i = -1; i <= 1; i++)
+    {
+        for (int j = -1; j <= 1; j++)
+        {
+            uint2 samplePos = uint2(
+                clamp(id.x + i, 0, texSize.x - 1),
+                clamp(id.y + j, 0, texSize.y - 1)
+            );
+            
+            float3 sample = _SourceTex[samplePos].rgb;
+            result += sample * kernel[i + 1][j + 1];
+        }
+    }
+    
+    return result;
+}
+
+float3 ApplyDarkRomanticismEffect(float3 color, uint2 id, uint2 texSize, float intensity)
+{
+    // Apply contrast enhancement
+    float3 contrastEnhanced = ApplyKernel(DARK_CONTRAST_KERNEL, id, texSize);
+    
+    // Apply shadow emphasis
+    float3 shadowEmphasis = ApplyKernel(SHADOW_EMPHASIS_KERNEL, id, texSize);
+    
+    // Mix results
+    float3 result = lerp(color, contrastEnhanced, intensity * 0.5);
+    result = lerp(result, shadowEmphasis, intensity * 0.3);
+    
+    // Add dark vignette
+    float2 uv = float2(id) / float2(texSize);
+    float2 centeredUV = uv * 2 - 1;
+    float vignette = 1 - dot(centeredUV, centeredUV) * (0.5 + intensity * 0.3);
+    result *= vignette;
+    
+    // Add gothic color tinting
+    float3 gothicTint = float3(0.9, 0.85, 1.0);
+    result *= lerp(float3(1,1,1), gothicTint, intensity * 0.4);
+    
+    // Enhance shadows
+    float luminance = dot(result, float3(0.299, 0.587, 0.114));
+    float shadowMask = smoothstep(0.5, 0.0, luminance);
+    result = lerp(result, result * 0.5, shadowMask * intensity);
+    
+    // Add subtle fog effect
+    float fogNoise = frac(sin(dot(uv, float2(12.9898, 78.233)) + _Time * 0.1) * 43758.5453);
+    float fogMask = fogNoise * smoothstep(0.3, 0.7, luminance);
+    result = lerp(result, float3(0.8, 0.8, 0.9), fogMask * intensity * 0.2);
+    
+    return result;
+}
+
+[numthreads(8,8,1)]
+void StyleTransfer(uint3 id : SV_DispatchThreadID)
+{
+    uint2 texSize;
+    _ResultTex.GetDimensions(texSize.x, texSize.y);
+    
+    if (id.x >= texSize.x || id.y >= texSize.y)
+        return;
+
+    // Get original color
+    float4 originalColor = _SourceTex[id.xy];
+    
+    // Apply dark romanticism effect
+    float3 final = ApplyDarkRomanticismEffect(originalColor.rgb, id.xy, texSize, _Intensity);
+    
+    // Store result
+    _ResultTex[id.xy] = float4(final, originalColor.a);
+}

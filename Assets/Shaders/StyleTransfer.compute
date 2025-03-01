@@ -1,0 +1,122 @@
+#pragma kernel StyleTransfer
+
+Texture2D<float4> _SourceTex;
+RWTexture2D<float4> _ResultTex;
+float _Intensity;
+float _Time;
+
+// Neural network weights and biases (simplified for example)
+static const int FEATURE_SIZE = 16;
+static const float3x3 FEATURE_WEIGHTS[FEATURE_SIZE] = {
+    // Edge detection
+    float3x3(-1, -1, -1, -1, 8, -1, -1, -1, -1),
+    // Vertical sobel
+    float3x3(-1, 0, 1, -2, 0, 2, -1, 0, 1),
+    // Horizontal sobel
+    float3x3(-1, -2, -1, 0, 0, 0, 1, 2, 1),
+    // Gaussian blur
+    float3x3(1, 2, 1, 2, 4, 2, 1, 2, 1) / 16.0,
+    // Custom horror patterns...
+    float3x3(0.5, -1, 0.5, -1, 3, -1, 0.5, -1, 0.5),
+    float3x3(-0.5, 0.5, -0.5, 0.5, 2, 0.5, -0.5, 0.5, -0.5),
+    float3x3(0.3, -0.3, 0.3, -0.3, 2, -0.3, 0.3, -0.3, 0.3),
+    float3x3(-0.2, 0.2, -0.2, 0.2, 1.8, 0.2, -0.2, 0.2, -0.2),
+    float3x3(0.4, -0.4, 0.4, -0.4, 2.4, -0.4, 0.4, -0.4, 0.4),
+    float3x3(-0.6, 0.6, -0.6, 0.6, 3.2, 0.6, -0.6, 0.6, -0.6),
+    float3x3(0.7, -0.7, 0.7, -0.7, 3.8, -0.7, 0.7, -0.7, 0.7),
+    float3x3(-0.8, 0.8, -0.8, 0.8, 4.4, 0.8, -0.8, 0.8, -0.8),
+    float3x3(0.1, -0.1, 0.1, -0.1, 1.4, -0.1, 0.1, -0.1, 0.1),
+    float3x3(-0.3, 0.3, -0.3, 0.3, 2.2, 0.3, -0.3, 0.3, -0.3),
+    float3x3(0.5, -0.5, 0.5, -0.5, 3.0, -0.5, 0.5, -0.5, 0.5),
+    float3x3(-0.7, 0.7, -0.7, 0.7, 3.8, 0.7, -0.7, 0.7, -0.7)
+};
+
+float3 ApplyKernel(float3x3 kernel, uint2 id, uint2 texSize)
+{
+    float3 result = float3(0, 0, 0);
+    
+    for (int i = -1; i <= 1; i++)
+    {
+        for (int j = -1; j <= 1; j++)
+        {
+            uint2 samplePos = uint2(
+                clamp(id.x + i, 0, texSize.x - 1),
+                clamp(id.y + j, 0, texSize.y - 1)
+            );
+            
+            float3 sample = _SourceTex[samplePos].rgb;
+            result += sample * kernel[i + 1][j + 1];
+        }
+    }
+    
+    return result;
+}
+
+float3 ApplyFeatures(uint2 id, uint2 texSize)
+{
+    float3 result = float3(0, 0, 0);
+    
+    for (int i = 0; i < FEATURE_SIZE; i++)
+    {
+        result += ApplyKernel(FEATURE_WEIGHTS[i], id, texSize) * 0.0625; // 1/16 to normalize
+    }
+    
+    return result;
+}
+
+float3 ApplyStyleTransfer(float3 original, float3 features, float intensity)
+{
+    // Non-linear activation
+    float3 activated = tanh(features);
+    
+    // Mix with original based on intensity
+    return lerp(original, activated, intensity);
+}
+
+float3 ApplyHorrorEffects(float3 color, uint2 id, uint2 texSize, float intensity)
+{
+    // Add temporal variation
+    float timeEffect = sin(_Time * 0.5) * 0.1 * intensity;
+    
+    // Vignette effect
+    float2 uv = float2(id) / float2(texSize);
+    float2 centeredUV = uv * 2 - 1;
+    float vignette = 1 - dot(centeredUV, centeredUV) * 0.3;
+    
+    // Color manipulation
+    float3 result = color;
+    result.r += timeEffect;
+    result.b -= timeEffect * 0.5;
+    result *= vignette;
+    
+    // Add subtle noise
+    float noise = frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+    result += (noise - 0.5) * 0.05 * intensity;
+    
+    return result;
+}
+
+[numthreads(8,8,1)]
+void StyleTransfer(uint3 id : SV_DispatchThreadID)
+{
+    uint2 texSize;
+    _ResultTex.GetDimensions(texSize.x, texSize.y);
+    
+    if (id.x >= texSize.x || id.y >= texSize.y)
+        return;
+
+    // Get original color
+    float4 originalColor = _SourceTex[id.xy];
+    
+    // Extract features
+    float3 features = ApplyFeatures(id.xy, texSize);
+    
+    // Apply style transfer
+    float3 stylized = ApplyStyleTransfer(originalColor.rgb, features, _Intensity);
+    
+    // Apply horror effects
+    float3 final = ApplyHorrorEffects(stylized, id.xy, texSize, _Intensity);
+    
+    // Store result
+    _ResultTex[id.xy] = float4(final, originalColor.a);
+}
