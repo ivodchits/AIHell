@@ -1,0 +1,560 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+
+/// <summary>
+/// Handles the generation of different types of game content through LLM prompts
+/// </summary>
+public class ContentGenerator : MonoBehaviour
+{
+    // Singleton instance
+    private static ContentGenerator _instance;
+    public static ContentGenerator Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<ContentGenerator>();
+                if (_instance == null)
+                {
+                    GameObject obj = new GameObject("ContentGenerator");
+                    _instance = obj.AddComponent<ContentGenerator>();
+                }
+            }
+            return _instance;
+        }
+    }
+
+    [Header("Prompt Templates")]
+    [SerializeField] private List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
+
+    private void Awake()
+    {
+        // Ensure singleton behavior
+        if (_instance != null && _instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        
+        _instance = this;
+        DontDestroyOnLoad(this.gameObject);
+    }
+    
+    /// <summary>
+    /// Gets a prompt template by name
+    /// </summary>
+    /// <param name="templateName">Name of the template to retrieve</param>
+    /// <returns>The prompt template</returns>
+    public LLMPromptTemplate GetPromptTemplate(string templateName)
+    {
+        LLMPromptTemplate template = promptTemplates.Find(t => t.templateName == templateName);
+        
+        if (template != null)
+        {
+            return template;
+        }
+        
+        Debug.LogWarning($"Prompt template '{templateName}' not found. Using default template.");
+        return new LLMPromptTemplate
+        {
+            templateText = $"You are a text adventure game narrative generator. Generate a response based on the following context: {templateName}",
+            modelType = ModelType.Lite
+        };
+    }
+
+    /// <summary>
+    /// Fills placeholder values in a prompt template
+    /// </summary>
+    /// <param name="template">The template to fill</param>
+    /// <param name="context">Context values to insert</param>
+    /// <param name="gameState">Game state values to insert</param>
+    /// <returns>The filled prompt template</returns>
+    public string FillPromptTemplate(string template, Dictionary<string, string> context, Dictionary<string, object> gameState)
+    {
+        string filledTemplate = template;
+        
+        // Replace context placeholders
+        if (context != null)
+        {
+            foreach (var kvp in context)
+            {
+                string placeholder = "{" + kvp.Key + "}";
+                filledTemplate = filledTemplate.Replace(placeholder, kvp.Value);
+            }
+        }
+        
+        // Replace game state placeholders
+        if (gameState != null)
+        {
+            foreach (var kvp in gameState)
+            {
+                string placeholder = "{" + kvp.Key + "}";
+                
+                // Convert the value to string representation
+                string valueStr = kvp.Value?.ToString() ?? "null";
+                filledTemplate = filledTemplate.Replace(placeholder, valueStr);
+            }
+        }
+        
+        return filledTemplate;
+    }
+    
+    #region Pre-Game Content Generation
+    
+    /// <summary>
+    /// Generates the initial game setting and world description
+    /// </summary>
+    /// <param name="context">Context about the game world</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Game setting description</returns>
+    public async Task<string> GenerateGameSetting(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("GameSetting");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a summarized version of the game setting for context in other prompts
+    /// </summary>
+    /// <param name="fullSetting">The full game setting description</param>
+    /// <returns>Summarized setting description</returns>
+    public async Task<string> GenerateSettingSummary(string fullSetting)
+    {
+        var promptTemplate = GetPromptTemplate("SettingSummary");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "full_setting", fullSetting }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        // Use local LLM for summarization
+        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
+        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
+        LLMManager.Instance.SetLLMProvider(originalProvider);
+        
+        return result;
+    }
+    
+    /// <summary>
+    /// Generates a room description for an image generation prompt
+    /// </summary>
+    /// <param name="roomDescription">Full room description</param>
+    /// <param name="levelNumber">Current level number</param>
+    /// <returns>Image generation prompt</returns>
+    public async Task<string> GenerateRoomImagePrompt(string roomDescription, int levelNumber)
+    {
+        var promptTemplate = GetPromptTemplate("RoomImageGeneration");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "room_description", roomDescription },
+            { "level_number", levelNumber.ToString() }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    #endregion
+    
+    #region Room Generation
+    
+    /// <summary>
+    /// Generates a room description using the LLM
+    /// </summary>
+    /// <param name="roomContext">Context about the room</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Room description text</returns>
+    public async Task<string> GenerateRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("RoomDescription");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates the first room description of a level
+    /// </summary>
+    /// <param name="roomContext">Context about the room</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>First room description text</returns>
+    public async Task<string> GenerateFirstRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("FirstRoom");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates the next room description in a level
+    /// </summary>
+    /// <param name="roomContext">Context about the room and previous rooms</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Next room description text</returns>
+    public async Task<string> GenerateNextRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("NextRoom");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates the exit room description for a level
+    /// </summary>
+    /// <param name="roomContext">Context about the room and previous rooms</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Exit room description text</returns>
+    public async Task<string> GenerateExitRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("ExitRoom");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a description for revisiting a previously visited room
+    /// </summary>
+    /// <param name="roomContext">Context about the room including previous visit summary</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Revisited room description text</returns>
+    public async Task<string> GenerateRevisitedRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("RevisitedRoom");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a summary of what happened in a room
+    /// </summary>
+    /// <param name="fullRoomConversation">The full conversation history in the room</param>
+    /// <returns>Room summary text</returns>
+    public async Task<string> GenerateRoomSummary(string fullRoomConversation)
+    {
+        var promptTemplate = GetPromptTemplate("RoomSummary");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "full_room_conversation", fullRoomConversation }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        // Use local LLM for summarization
+        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
+        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
+        LLMManager.Instance.SetLLMProvider(originalProvider);
+        
+        return result;
+    }
+    
+    #endregion
+    
+    #region Level Generation
+    
+    /// <summary>
+    /// Generates a level description using the LLM
+    /// </summary>
+    /// <param name="levelContext">Context about the level, including difficulty, horror score, and theme</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Level description text</returns>
+    public async Task<string> GenerateLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("LevelDescription");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates the first level description
+    /// </summary>
+    /// <param name="levelContext">Context about the first level</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>First level description text</returns>
+    public async Task<string> GenerateFirstLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("FirstLevel");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a summarized version of a level description
+    /// </summary>
+    /// <param name="fullLevelDescription">The full level description</param>
+    /// <returns>Summarized level description</returns>
+    public async Task<string> GenerateLevelSummary(string fullLevelDescription)
+    {
+        var promptTemplate = GetPromptTemplate("LevelSummary");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "full_level_description", fullLevelDescription }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        // Use local LLM for summarization
+        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
+        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
+        LLMManager.Instance.SetLLMProvider(originalProvider);
+        
+        return result;
+    }
+    
+    /// <summary>
+    /// Generates the next level description after completing a level
+    /// </summary>
+    /// <param name="levelContext">Context about the next level, previous levels, and player profile</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Next level description text</returns>
+    public async Task<string> GenerateNextLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("NextLevel");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a summary of the entire level experience
+    /// </summary>
+    /// <param name="levelContext">Context including all room summaries and doctor appointment</param>
+    /// <returns>Full level summary text</returns>
+    public async Task<string> GenerateFullLevelSummary(Dictionary<string, string> levelContext)
+    {
+        var promptTemplate = GetPromptTemplate("FullLevelSummary");
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, null);
+        
+        // Use local LLM for summarization
+        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
+        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
+        LLMManager.Instance.SetLLMProvider(originalProvider);
+        
+        return result;
+    }
+    
+    #endregion
+    
+    #region Doctor/Endgame Interactions
+    
+    /// <summary>
+    /// Generates a doctor's office interaction
+    /// </summary>
+    /// <param name="doctorContext">Context about the doctor interaction, level number, and room summaries</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Doctor dialogue text</returns>
+    public async Task<string> GenerateDoctorInteraction(Dictionary<string, string> doctorContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("DoctorOffice");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, doctorContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a summary of the doctor's appointment
+    /// </summary>
+    /// <param name="fullAppointment">The full appointment conversation</param>
+    /// <returns>Appointment summary text</returns>
+    public async Task<string> GenerateDoctorAppointmentSummary(string fullAppointment)
+    {
+        var promptTemplate = GetPromptTemplate("AppointmentSummary");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "full_appointment", fullAppointment }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        // Use local LLM for summarization
+        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
+        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
+        LLMManager.Instance.SetLLMProvider(originalProvider);
+        
+        return result;
+    }
+    
+    /// <summary>
+    /// Generates the final confrontation with Lucifer
+    /// </summary>
+    /// <param name="endgameContext">Context including all level summaries and player profile</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Final confrontation text</returns>
+    public async Task<string> GenerateFinalConfrontation(Dictionary<string, string> endgameContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("FinalConfrontation");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, endgameContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    #endregion
+    
+    #region Game Flow and Player Profile
+    
+    /// <summary>
+    /// Generates the initial game introduction and room description
+    /// </summary>
+    /// <param name="context">Context including setting and level summaries, and room description</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Game introduction text</returns>
+    public async Task<string> GenerateGameIntroduction(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("GameIntroduction");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Processes the player's input during gameplay
+    /// </summary>
+    /// <param name="playerInput">The player's message</param>
+    /// <param name="conversationHistory">Previous conversation history</param>
+    /// <param name="gameContext">Additional game context</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Game response text</returns>
+    public async Task<string> ProcessPlayerInput(string playerInput, string conversationHistory, Dictionary<string, string> gameContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("GameFlow");
+        
+        Dictionary<string, string> context = new Dictionary<string, string>(gameContext);
+        context["player_input"] = playerInput;
+        context["conversation_history"] = conversationHistory;
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates an updated psychological profile for the player
+    /// </summary>
+    /// <param name="profileContext">Context including level summary, appointment log, and previous profile</param>
+    /// <returns>Updated player profile text</returns>
+    public async Task<string> GeneratePlayerProfile(Dictionary<string, string> profileContext)
+    {
+        var promptTemplate = GetPromptTemplate("PlayerProfile");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, profileContext, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Processes game flow to detect special ending conditions like ROOM CLEAR or PLAYER DEAD
+    /// </summary>
+    /// <param name="responseText">The LLM response text</param>
+    /// <param name="gameSession">The current game session</param>
+    /// <returns>The processed response with any special conditions handled</returns>
+    public string ProcessGameFlowResponse(string responseText, GameSession gameSession)
+    {
+        string processedText = responseText;
+        
+        // Check for room clear condition
+        if (processedText.EndsWith("ROOM CLEAR") || processedText.Contains("ROOM CLEAR\n"))
+        {
+            processedText = processedText.Replace("ROOM CLEAR", "");
+            gameSession.CurrentGameFlowState = GameFlowState.RoomSummarization;
+            Debug.Log("Room cleared detected, advancing to room summarization");
+        }
+        
+        // Check for player death
+        if (processedText.EndsWith("PLAYER DEAD") || processedText.Contains("PLAYER DEAD\n"))
+        {
+            processedText = processedText.Replace("PLAYER DEAD", "");
+            gameSession.IsGameOver = true;
+            gameSession.CurrentGameFlowState = GameFlowState.GameOver;
+            Debug.Log("Player death detected, game over");
+        }
+        
+        return processedText.Trim();
+    }
+    
+    #endregion
+    
+    /// <summary>
+    /// Generates an event description using the LLM
+    /// </summary>
+    /// <param name="eventContext">Context about the event</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Event description text</returns>
+    public async Task<string> GenerateEventDescription(Dictionary<string, string> eventContext, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("EventDescription");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, eventContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates character dialogue using the LLM
+    /// </summary>
+    /// <param name="characterContext">Context about the character</param>
+    /// <param name="playerInput">The player's input</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Character dialogue text</returns>
+    public async Task<string> GenerateCharacterDialogue(Dictionary<string, string> characterContext, string playerInput, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("CharacterDialogue");
+        
+        // Merge character context with player input
+        Dictionary<string, string> fullContext = new Dictionary<string, string>(characterContext);
+        fullContext["player_input"] = playerInput;
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, fullContext, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Handles the game over sequence with appropriate messaging based on how the game ended
+    /// </summary>
+    /// <param name="context">Context about how the game ended</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Game over message</returns>
+    public async Task<string> GenerateGameOverSequence(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("GameOver");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+    
+    /// <summary>
+    /// Generates a victory sequence for when the player successfully defeats Lucifer
+    /// </summary>
+    /// <param name="context">Context about the player's journey</param>
+    /// <param name="gameState">Current game state</param>
+    /// <returns>Victory message</returns>
+    public async Task<string> GenerateVictorySequence(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    {
+        var promptTemplate = GetPromptTemplate("Victory");
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+    }
+}

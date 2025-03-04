@@ -4,9 +4,11 @@ using UnityEngine;
 
 public enum RoomType
 {
-    Normal,
+    None,
     Entrance,
-    Exit
+    Standard,
+    Exit,
+    DoctorOffice
 }
 
 public class Room
@@ -27,7 +29,7 @@ public class Room
     {
         Position = position;
         Connections = new Dictionary<Direction, Room>();
-        Type = RoomType.Normal;
+        Type = RoomType.Standard;
         Visited = false;
     }
     

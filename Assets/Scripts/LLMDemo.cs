@@ -30,6 +30,7 @@ public class LLMDemo : MonoBehaviour
     
     // References
     private LLMManager llmManager;
+    private ContentGenerator contentGenerator;
     private string currentRoomDescription = "";
     
     // Mock player profile for demo
@@ -45,6 +46,7 @@ public class LLMDemo : MonoBehaviour
     {
         // Get the LLMManager instance
         llmManager = LLMManager.Instance;
+        contentGenerator = ContentGenerator.Instance;
         
         if (llmManager == null)
         {
@@ -125,7 +127,7 @@ public class LLMDemo : MonoBehaviour
             };
             
             // Generate room description
-            string description = await llmManager.GenerateRoomDescription(roomContext, gameState);
+            string description = await contentGenerator.GenerateRoomDescription(roomContext, gameState);
             currentRoomDescription = description;
             
             outputText.text = "Room Description:\n\n" + description;
@@ -170,7 +172,7 @@ public class LLMDemo : MonoBehaviour
             };
             
             // Generate event description
-            string eventDescription = await llmManager.GenerateEventDescription(eventContext, gameState);
+            string eventDescription = await contentGenerator.GenerateEventDescription(eventContext, gameState);
             
             outputText.text = currentRoomDescription + "\n\nEvent:\n" + eventDescription;
         }
@@ -221,7 +223,7 @@ public class LLMDemo : MonoBehaviour
             };
             
             // Generate character dialogue
-            string dialogue = await llmManager.GenerateCharacterDialogue(characterContext, playerInput, gameState);
+            string dialogue = await contentGenerator.GenerateCharacterDialogue(characterContext, playerInput, gameState);
             
             outputText.text = currentRoomDescription + "\n\nYou: " + playerInput + "\n\nCharacter: " + dialogue;
             

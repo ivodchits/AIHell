@@ -6,20 +6,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-// Enum to define different LLM providers
-public enum LLMProvider
-{
-    Gemini,
-    LocalLLM
-}
-
-[Serializable]
-public class LLMPromptTemplate
-{
-    public string templateName;
-    public string templateText;
-}
-
 public class LLMManager : MonoBehaviour
 {
     // Singleton instance
@@ -47,10 +33,11 @@ public class LLMManager : MonoBehaviour
     
     // API settings
     [Header("Gemini API Settings")]
-    [SerializeField] private string geminiApiKey = "";
-    [SerializeField] private string geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    [SerializeField] private string geminiApiKey = "AIzaSyAO3eBNDEw4gVi58sDnbDWAX03vTMMzBw8";
+    [SerializeField] private string geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{0}:generateContent";
     [SerializeField] private float geminiTemperature = 0.7f;
     [SerializeField] private int maxOutputTokens = 1024;
+    [SerializeField] private ModelData[] models;
     
     [Header("Local LLM Settings")]
     [SerializeField] private string localLLMApiUrl = "http://localhost:8000/api/generate";
@@ -59,9 +46,6 @@ public class LLMManager : MonoBehaviour
     [Header("Rate Limiting")]
     [SerializeField] private float minTimeBetweenRequests = 1.0f;
     private float lastRequestTime = 0f;
-    
-    [Header("Prompt Templates")]
-    [SerializeField] private List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
     
     // Fallback mechanism
     [SerializeField] private bool useLocalLLMFallback = true;
@@ -119,6 +103,8 @@ public class LLMManager : MonoBehaviour
         }
     }
     
+    public LLMProvider CurrentProvider => currentProvider;
+
     /// <summary>
     /// Set the active LLM provider
     /// </summary>
@@ -140,59 +126,12 @@ public class LLMManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Generates a room description using the current LLM provider
-    /// </summary>
-    /// <param name="roomContext">Context about the room</param>
-    /// <param name="gameState">Current game state</param>
-    /// <returns>Room description text</returns>
-    public async Task<string> GenerateRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
-    {
-        string promptTemplate = GetPromptTemplate("RoomDescription");
-        string finalPrompt = FillPromptTemplate(promptTemplate, roomContext, gameState);
-        
-        return await SendPromptToLLM(finalPrompt);
-    }
-    
-    /// <summary>
-    /// Generates an event description using the current LLM provider
-    /// </summary>
-    /// <param name="eventContext">Context about the event</param>
-    /// <param name="gameState">Current game state</param>
-    /// <returns>Event description text</returns>
-    public async Task<string> GenerateEventDescription(Dictionary<string, string> eventContext, Dictionary<string, object> gameState)
-    {
-        string promptTemplate = GetPromptTemplate("EventDescription");
-        string finalPrompt = FillPromptTemplate(promptTemplate, eventContext, gameState);
-        
-        return await SendPromptToLLM(finalPrompt);
-    }
-    
-    /// <summary>
-    /// Generates character dialogue using the current LLM provider
-    /// </summary>
-    /// <param name="characterContext">Context about the character</param>
-    /// <param name="playerInput">The player's input</param>
-    /// <param name="gameState">Current game state</param>
-    /// <returns>Character dialogue text</returns>
-    public async Task<string> GenerateCharacterDialogue(Dictionary<string, string> characterContext, string playerInput, Dictionary<string, object> gameState)
-    {
-        string promptTemplate = GetPromptTemplate("CharacterDialogue");
-        
-        // Merge character context with player input
-        Dictionary<string, string> fullContext = new Dictionary<string, string>(characterContext);
-        fullContext["player_input"] = playerInput;
-        
-        string finalPrompt = FillPromptTemplate(promptTemplate, fullContext, gameState);
-        
-        return await SendPromptToLLM(finalPrompt);
-    }
-    
-    /// <summary>
     /// Sends a prompt to the current LLM provider
     /// </summary>
     /// <param name="prompt">The prompt to send</param>
+    /// <param name="modelType">The model to use</param>
     /// <returns>LLM response text</returns>
-    private async Task<string> SendPromptToLLM(string prompt, int retryCount = 0)
+    public async Task<string> SendPromptToLLM(string prompt, ModelType modelType, int retryCount = 0)
     {
         // Rate limiting
         float timeSinceLastRequest = Time.time - lastRequestTime;
@@ -212,7 +151,7 @@ public class LLMManager : MonoBehaviour
                 case LLMProvider.Gemini:
                     // Using the coroutine-based method through a TaskCompletionSource
                     TaskCompletionSource<string> geminiTcs = new TaskCompletionSource<string>();
-                    StartCoroutine(SendPromptToGeminiCoroutine(prompt, (result) => geminiTcs.SetResult(result), 
+                    StartCoroutine(SendPromptToGeminiCoroutine(prompt, modelType, (result) => geminiTcs.SetResult(result), 
                                                               (exception) => geminiTcs.SetException(exception)));
                     response = await Task.Run(() => {
                         // Poll until the task is completed
@@ -252,7 +191,7 @@ public class LLMManager : MonoBehaviour
                 Debug.Log("Falling back to Local LLM...");
                 LLMProvider originalProvider = currentProvider;
                 currentProvider = LLMProvider.LocalLLM;
-                string result = await SendPromptToLLM(prompt, retryCount + 1);
+                string result = await SendPromptToLLM(prompt, modelType, retryCount + 1);
                 currentProvider = originalProvider;
                 return result;
             }
@@ -260,7 +199,7 @@ public class LLMManager : MonoBehaviour
             {
                 Debug.Log($"Retry attempt {retryCount + 1}...");
                 await Task.Delay(1000); // Wait a second before retrying
-                return await SendPromptToLLM(prompt, retryCount + 1);
+                return await SendPromptToLLM(prompt, modelType, retryCount + 1);
             }
             
             return "Error: Unable to generate content. Please try again later.";
@@ -270,10 +209,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to Gemini
     /// </summary>
-    /// <param name="prompt">The prompt to send</param>
-    /// <param name="onSuccess">Callback when the operation succeeds</param>
-    /// <param name="onError">Callback when the operation fails</param>
-    private IEnumerator SendPromptToGeminiCoroutine(string prompt, Action<string> onSuccess, Action<Exception> onError)
+    private IEnumerator SendPromptToGeminiCoroutine(string prompt, ModelType modelType, Action<string> onSuccess, Action<Exception> onError)
     {
         if (string.IsNullOrEmpty(geminiApiKey))
         {
@@ -282,7 +218,9 @@ public class LLMManager : MonoBehaviour
         }
         
         // Construct the API URL with API key
-        string apiUrlWithKey = $"{geminiApiUrl}?key={geminiApiKey}";
+        var model = Array.Find(models, m => m.modelType == modelType);
+        var urlWithModel = string.Format(geminiApiUrl, model.modelName);
+        string apiUrlWithKey = $"{urlWithModel}?key={geminiApiKey}";
         
         // Create the request payload
         string requestJson = $@"{{
@@ -328,9 +266,6 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to local LLM
     /// </summary>
-    /// <param name="prompt">The prompt to send</param>
-    /// <param name="onSuccess">Callback when the operation succeeds</param>
-    /// <param name="onError">Callback when the operation fails</param>
     private IEnumerator SendPromptToLocalLLMCoroutine(string prompt, Action<string> onSuccess, Action<Exception> onError)
     {
         // Create the request payload - adjust based on your local LLM API format
@@ -364,9 +299,6 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Parses the LLM response based on the provider
     /// </summary>
-    /// <param name="response">Raw response from the LLM</param>
-    /// <param name="provider">The LLM provider</param>
-    /// <returns>Extracted text content</returns>
     private string ParseLLMResponse(string response, LLMProvider provider)
     {
         try
@@ -403,65 +335,8 @@ public class LLMManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Gets a prompt template by name
-    /// </summary>
-    /// <param name="templateName">Name of the template to retrieve</param>
-    /// <returns>The prompt template text</returns>
-    private string GetPromptTemplate(string templateName)
-    {
-        LLMPromptTemplate template = promptTemplates.Find(t => t.templateName == templateName);
-        
-        if (template != null)
-        {
-            return template.templateText;
-        }
-        
-        Debug.LogWarning($"Prompt template '{templateName}' not found. Using default template.");
-        return "You are a text adventure game narrative generator. Generate a response based on the following context: {context}";
-    }
-    
-    /// <summary>
-    /// Fills placeholder values in a prompt template
-    /// </summary>
-    /// <param name="template">The template to fill</param>
-    /// <param name="context">Context values to insert</param>
-    /// <param name="gameState">Game state values to insert</param>
-    /// <returns>The filled prompt template</returns>
-    private string FillPromptTemplate(string template, Dictionary<string, string> context, Dictionary<string, object> gameState)
-    {
-        string filledTemplate = template;
-        
-        // Replace context placeholders
-        if (context != null)
-        {
-            foreach (var kvp in context)
-            {
-                string placeholder = "{" + kvp.Key + "}";
-                filledTemplate = filledTemplate.Replace(placeholder, kvp.Value);
-            }
-        }
-        
-        // Replace game state placeholders
-        if (gameState != null)
-        {
-            foreach (var kvp in gameState)
-            {
-                string placeholder = "{" + kvp.Key + "}";
-                
-                // Convert the value to string representation
-                string valueStr = kvp.Value?.ToString() ?? "null";
-                filledTemplate = filledTemplate.Replace(placeholder, valueStr);
-            }
-        }
-        
-        return filledTemplate;
-    }
-    
-    /// <summary>
     /// Escapes a string for use in JSON
     /// </summary>
-    /// <param name="input">The string to escape</param>
-    /// <returns>The escaped string</returns>
     private string EscapeJsonString(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -487,6 +362,27 @@ public class LLMManager : MonoBehaviour
         
         return sb.ToString();
     }
+}
+
+// Enum to define different LLM providers
+public enum LLMProvider
+{
+    Gemini,
+    LocalLLM
+}
+
+public enum ModelType
+{
+    Flash,
+    Lite,
+    Pro
+}
+
+[Serializable]
+public class ModelData
+{
+    public ModelType modelType;
+    public string modelName;
 }
 
 // Classes to deserialize LLM responses

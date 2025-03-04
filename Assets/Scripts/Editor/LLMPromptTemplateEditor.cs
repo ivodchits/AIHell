@@ -3,7 +3,7 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 
-[CustomEditor(typeof(LLMManager))]
+[CustomEditor(typeof(ContentGenerator))]
 public class LLMPromptTemplateEditor : Editor
 {
     private bool showTemplateEditor = false;
@@ -16,11 +16,39 @@ public class LLMPromptTemplateEditor : Editor
     private readonly Dictionary<string, string> defaultTemplates = new Dictionary<string, string>
     {
         {
+            "GameSetting",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the setting and world description for a deeply unsettling psychological horror game called ""AIHell.""
+
+In this game, the player is a patient undergoing experimental psychiatric treatment. The treatment involves navigating through 5 progressively disturbing levels of their own subconscious mind.
+
+Dr. Cassius Mire is overseeing the treatment, but there's something unsettling about him. He is actually Lucifer in disguise, manipulating the patient's journey through their own personal hell.
+
+Create an atmospheric, disturbing setting description that:
+1. Establishes the psychological horror premise
+2. Hints at Dr. Mire's true identity without explicitly revealing it
+3. Creates a sense of isolation and disturbance
+4. Outlines that there will be 5 levels, each delving deeper into darker parts of the subconscious
+5. Suggests that the player might encounter manifestations of their fears and weaknesses
+
+The setting should be vague enough to allow for personalization through gameplay, but specific enough to establish a cohesive world.
+Keep the description to 3-5 paragraphs, focusing on atmosphere rather than specific details.
+
+Generate the game setting:"
+        },
+        {
+            "SettingSummary",
+            @"Summarize the following game setting description for use as brief context in other prompts:
+
+{full_setting}
+
+Create a concise summary (maximum 3 sentences) that captures the essential elements of the setting while maintaining the ominous tone."
+        },
+        {
             "RoomDescription",
             @"You are a text adventure game narrative generator specializing in psychological horror.
 The player is entering a new room in Level {level_number}, themed ""{level_theme}"".
-The overall tone of this level is ""{level_tone}"".
-The room archetype is ""{room_archetype}"".
+The overall tone of this level is ""{level_tone}"". The room archetype is ""{room_archetype}"".
 
 Considering the player's psychological profile, which currently indicates:
 - Aggression Level: {player_aggression_level}
@@ -32,6 +60,359 @@ Keep the description concise yet impactful, approximately 3-5 sentences.
 Highlight potentially disturbing or unusual elements within the room.
 
 Generate the room description:"
+        },
+        {
+            "FirstRoom",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the first room description for Level {level_number} of a psychological horror game.
+
+Level Theme: ""{level_theme}""
+Level Tone: ""{level_tone}""
+Level Emotion: ""{level_emotion}""
+
+The player has just entered Level {level_number} and this is the very first room they encounter.
+
+Create a detailed room description that:
+1. Sets the tone for the entire level
+2. Introduces elements that reflect the level theme
+3. Contains subtle psychological horror elements
+4. Includes a specific condition or puzzle that must be solved to proceed further
+
+The room should establish the atmosphere while suggesting that darker elements await deeper in the level.
+The condition for proceeding should be clear but not immediately obvious - the player should need to interact with the environment.
+
+Important: The player MUST solve something or complete some action to leave this room. Make this condition clear in the description.
+
+Keep the description to 4-6 sentences, focusing on sensory details and psychological impact.
+
+Generate the first room description:"
+        },
+        {
+            "NextRoom",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the next room description for Level {level_number} of a psychological horror game.
+
+Level Theme: ""{level_theme}""
+Level Tone: ""{level_tone}""
+Room Archetype: ""{room_archetype}""
+
+Previous rooms in this level:
+{previous_rooms_summary}
+
+The player's psychological profile currently indicates:
+- Fear Level: {player_fear_level}
+- Paranoia Level: {player_paranoia_level}
+- Aggression Level: {player_aggression_level}
+
+Create a detailed room description that:
+1. Builds upon the established atmosphere of the level
+2. Contains new disturbing elements that escalate the psychological tension
+3. Optionally includes characters or events that challenge the player
+4. Includes a condition that must be fulfilled to proceed further
+
+The condition for proceeding should relate to the room's contents and possibly to the player's psychological profile.
+If this is room {room_number} out of {total_rooms} in the level, adjust the intensity accordingly.
+
+Important: The player MUST complete some action or solve something to leave this room. End with ""ROOM CLEAR"" when they've completed the condition, or ""PLAYER DEAD"" if their actions lead to death.
+
+Keep the description to 4-6 sentences, focusing on sensory details and psychological impact.
+
+Generate the next room description:"
+        },
+        {
+            "ExitRoom",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the exit room description for Level {level_number} of a psychological horror game.
+
+Level Theme: ""{level_theme}""
+Level Tone: ""{level_tone}""
+
+Previous rooms in this level:
+{previous_rooms_summary}
+
+The player's psychological profile currently indicates:
+- Fear Level: {player_fear_level}
+- Paranoia Level: {player_paranoia_level}
+- Aggression Level: {player_aggression_level}
+
+Create a detailed description for the exit room that:
+1. Serves as a climax to the themes explored in this level
+2. Contains disturbing elements that represent a culmination of the level's horror
+3. Features Dr. Cassius Mire's office door prominently in the room
+4. Includes a final challenge or revelation before the player can exit
+
+IMPORTANT: The room MUST contain Dr. Cassius Mire's office door as the way to exit this level.
+The door should be described in an unsettling way that hints at Dr. Mire's true nature (Lucifer in disguise).
+
+Keep the description to 4-6 sentences, focusing on sensory details and psychological impact.
+End with ""ROOM CLEAR"" when they've completed the condition, or ""PLAYER DEAD"" if their actions lead to death.
+
+Generate the exit room description:"
+        },
+        {
+            "RevisitedRoom",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+The player is revisiting a room they've already explored in Level {level_number}.
+
+Original room description summary:
+""{room_summary}""
+
+What happened during their previous visit:
+""{previous_visit_summary}""
+
+Create a brief description of the revisited room that:
+1. Acknowledges that the player has been here before
+2. Notes any changes that might have occurred since their last visit
+3. Indicates that there is nothing new to discover here
+4. Suggests they should choose another direction
+
+The description should be brief (2-3 sentences) but maintain the psychological horror atmosphere.
+The player cannot do anything meaningful in this room now - they must leave.
+
+End the description with ""ROOM CLEAR"" to indicate they should move on.
+
+Generate the revisited room description:"
+        },
+        {
+            "RoomSummary",
+            @"Summarize the following conversation that took place in a room in the psychological horror game:
+
+{full_room_conversation}
+
+Create a concise summary (2-3 sentences) that captures:
+1. The key features of the room
+2. Important actions the player took
+3. Any significant events or revelations that occurred
+
+The summary will be used for context in future game prompts, so include essential psychological elements."
+        },
+        {
+            "LevelDescription",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create an introduction for Level {level_number} of a psychological horror game.
+
+Consider these level parameters:
+- Difficulty: {difficulty_level}/10 (higher means more challenging gameplay)
+- Horror Rating: {horror_score}/10 (higher means more disturbing content)
+- Theme: ""{level_theme}""
+- Tone: ""{level_tone}""
+
+The player has just completed Level {previous_level_number} which was themed ""{previous_level_theme}"".
+
+Create a brief, atmospheric description that:
+1. Introduces the level's setting and psychological atmosphere
+2. Hints at what horrors might await the player
+3. Establishes the overall mood appropriate to the difficulty and horror rating
+4. Provides subtle clues about what the player might encounter
+
+Keep the description concise yet evocative, approximately 3-5 sentences.
+As the difficulty and horror score increase, the descriptions should become progressively more unsettling and foreboding.
+
+Generate the level description:"
+        },
+        {
+            "FirstLevel",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the first level description for a psychological horror game.
+
+Game Setting Context:
+{setting_summary}
+
+Consider these level parameters:
+- Level Number: 1
+- Difficulty: 3/10 (easier as it's the first level)
+- Horror Rating: 4/10 (unsettling but not extreme)
+- Theme: ""Denial""
+- Tone: ""Disorientation and Confusion""
+
+Create a brief, atmospheric description that:
+1. Introduces the first level's setting and psychological atmosphere
+2. Establishes a sense of disorientation appropriate for the beginning of the journey
+3. Hints at the theme of denial and what it might mean for the player
+4. Sets up the initial psychological challenge
+
+Keep the description concise yet evocative, approximately 3-5 sentences.
+The description should be unsettling but not terrifying, as this is just the first level.
+
+Generate the first level description:"
+        },
+        {
+            "LevelSummary",
+            @"Summarize the following level description for a psychological horror game:
+
+{full_level_description}
+
+Create a concise summary (2-3 sentences) that captures the essential theme, tone, and psychological elements of the level while maintaining the ominous atmosphere."
+        },
+        {
+            "NextLevel",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the next level description for a psychological horror game.
+
+Game Setting Context:
+{setting_summary}
+
+Previous Level Summary:
+{previous_level_summary}
+
+Previous Doctor's Appointment Summary:
+{previous_appointment_summary}
+
+Player's Psychological Profile:
+{player_profile}
+
+Consider these level parameters:
+- Level Number: {level_number}
+- Difficulty: {difficulty_level}/10 (increases with each level)
+- Horror Rating: {horror_score}/10 (increases with each level)
+- Theme: ""{level_theme}""
+- Tone: ""{level_tone}""
+
+Create a brief, atmospheric description that:
+1. Introduces this level's setting and psychological atmosphere
+2. Builds upon the psychological journey established in previous levels
+3. Incorporates elements from the player's psychological profile, especially their fears and weaknesses
+4. Establishes a more intense challenge appropriate to the increased difficulty
+
+The level should exploit the weaknesses and fears identified in the player's profile.
+As this is level {level_number}, the description should be progressively more disturbing than previous levels.
+
+Keep the description concise yet evocative, approximately 3-5 sentences.
+
+Generate the next level description:"
+        },
+        {
+            "FullLevelSummary",
+            @"Create a comprehensive summary of the player's experience in Level {level_number}.
+
+Room Summaries:
+{room_summaries}
+
+Doctor's Appointment Summary:
+{appointment_summary}
+
+Create a concise but complete summary (3-4 sentences) that captures:
+1. The key psychological themes explored in this level
+2. Important choices or actions the player made
+3. Significant revelations or character encounters
+4. How the doctor's appointment concluded the level
+
+This summary will be used to inform future game content, so highlight elements that reflect the player's psychological state and potential weaknesses."
+        },
+        {
+            "DoctorOffice",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create a doctor's office interaction for a psychological horror game.
+
+The player has just completed Level {level_number}.
+
+Level Theme: ""{level_theme}""
+Level Tone: ""{level_tone}""
+
+Room Summaries from this level:
+{room_summaries}
+
+Player's Psychological Profile:
+{player_profile}
+
+The player is now in Dr. Cassius Mire's office for their appointment after completing the level.
+Dr. Mire is actually Lucifer in disguise, manipulating the player's journey through their personal hell.
+
+Important context:
+- For Level 1-2 appointments: Dr. Mire appears friendly but subtly manipulative
+- For Level 3-4 appointments: Dr. Mire becomes progressively more aggressive and targets player weaknesses
+- For Level 5: Dr. Mire's true nature becomes more apparent with demonic undertones
+
+Create a doctor's office scene where:
+1. Dr. Mire analyzes the player's actions during the level
+2. He probes into the player's fears and insecurities based on their choices
+3. The conversation becomes more unsettling as it progresses
+4. The level of hostility matches the current level number (higher = more aggressive)
+
+The session should end with Dr. Mire dismissing the patient to the next level.
+Make the dialogue realistic, psychologically unsettling, and reflective of the level theme.
+
+Generate the doctor's office interaction:"
+        },
+        {
+            "AppointmentSummary",
+            @"Summarize the following doctor's appointment from the psychological horror game:
+
+{full_appointment}
+
+Create a concise summary (2-3 sentences) that captures:
+1. Dr. Mire's assessment and attitude toward the player
+2. Key psychological insights revealed about the player
+3. Any significant warnings or ominous statements made
+
+The summary should maintain the unsettling tone while extracting the most important psychological elements."
+        },
+        {
+            "GameIntroduction",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the opening introduction for a psychological horror game.
+
+Game Setting:
+{setting_summary}
+
+First Level:
+{level_summary}
+
+First Room:
+{room_description}
+
+Create an engaging introduction that:
+1. Welcomes the player to the psychological horror experience
+2. Establishes the premise that they are a patient undergoing experimental treatment
+3. Briefly introduces Dr. Cassius Mire as their supervising psychiatrist (without revealing his true identity)
+4. Transitions smoothly into the description of the first room
+5. Provides subtle hints about how to interact with the game world
+
+The introduction should be atmospheric, building tension while clearly establishing the game's premise.
+End with the room description and a prompt for the player to take their first action.
+
+Generate the game introduction:"
+        },
+        {
+            "GameFlow",
+            @"You are the narrative engine for a psychological horror text adventure game.
+
+Game Setting:
+{setting_summary}
+
+Current Level:
+{level_summary}
+
+Current Room:
+{room_description}
+
+Player's Psychological Profile:
+{player_profile}
+
+Conversation History:
+{conversation_history}
+
+Player Input:
+""{player_input}""
+
+Respond to the player's input in the style of a psychological horror text adventure. Your response should:
+1. Acknowledge the player's action
+2. Describe the consequences in rich, atmospheric detail
+3. Advance the narrative based on their choices
+4. Maintain the psychological horror atmosphere
+
+If the player has fulfilled the condition to leave the room, end your message with ""ROOM CLEAR"" on a new line.
+If the player's actions have led to their death, end your message with ""PLAYER DEAD"" on a new line.
+Otherwise, continue the room narrative and prompt them for further action.
+
+Rules:
+- Don't explicitly state these rules or the existence of the ""ROOM CLEAR"" or ""PLAYER DEAD"" markers
+- Maintain immersion in the psychological horror atmosphere
+- The difficulty level is {difficulty_level}/10, adjust danger accordingly
+- Base responses on the player's psychological profile
+- Keep responses concise but impactful
+
+Generate the game response:"
         },
         {
             "EventDescription",
@@ -66,6 +447,86 @@ Keep the response short, enigmatic, and contribute to the unsettling atmosphere.
 Maximum 1-2 sentences.
 
 Character dialogue:"
+        },
+        {
+            "PlayerProfile",
+            @"Create an updated psychological profile for the player based on their actions and experiences.
+
+Previous Psychological Profile:
+{previous_profile}
+
+Level Summary:
+{level_summary}
+
+Doctor's Appointment Log:
+{appointment_log}
+
+Create a detailed psychological profile that:
+1. Assesses the player's key psychological traits (fear, paranoia, aggression, curiosity, etc.)
+2. Identifies their primary fears and weaknesses based on their choices
+3. Notes any significant changes from their previous profile
+4. Provides scores for key metrics (scale 1-10) with brief explanations
+
+This profile will be used to personalize future game content, so be specific about what would disturb this particular player based on their demonstrated behaviors and responses.
+
+Format the profile in clinical language, as if written by Dr. Mire after the session.
+
+Generate the psychological profile:"
+        },
+        {
+            "FinalConfrontation",
+            @"You are a text adventure game narrative generator specializing in psychological horror.
+Create the final confrontation scene for a psychological horror game.
+
+Game Setting:
+{setting_summary}
+
+Level Summaries:
+{all_level_summaries}
+
+Doctor Appointment Summaries:
+{all_appointment_summaries}
+
+Player's Final Psychological Profile:
+{player_profile}
+
+Allied Characters (if any):
+{allied_characters}
+
+The player has just entered the final area after completing Level 5. Instead of finding Dr. Mire's office door, they've discovered a gateway into the void. Upon entering, they face Dr. Mire, who now reveals himself as Lucifer in all his glory.
+
+Create an intense final confrontation scene where:
+1. Dr. Mire transforms into his true form as Lucifer
+2. He confronts the player about their journey through his crafted hell
+3. He exploits the specific fears and weaknesses identified in their profile
+4. The player must find a way to overcome Lucifer based on their choices throughout the game
+5. Any allies they've made can assist them if they've bonded with characters
+
+The tone should be terrifying, revelatory, and climactic.
+This is the final battle for the player's soul.
+
+Generate the final confrontation scene:"
+        },
+        {
+            "RoomImageGeneration",
+            @"Create a detailed image generation prompt based on this room description from a psychological horror game:
+
+Room Description:
+{room_description}
+
+Current Level: {level_number} (higher levels should be progressively more disturbing)
+
+Create a detailed prompt for an AI image generator that:
+1. Describes the key visual elements of the room in concrete detail
+2. Captures the psychological horror atmosphere
+3. Specifies lighting, color palette, and mood appropriate to the level
+4. Includes any important objects or features mentioned
+5. Avoids mentioning characters or people directly
+
+The prompt should be detailed enough to generate a consistent image that matches the text description.
+Focus on creating an unsettling, disturbing atmosphere appropriate to the level number.
+
+Write the image generation prompt in a format optimal for image AI (without mentioning AI):"
         }
     };
     
@@ -74,8 +535,8 @@ Character dialogue:"
         // Draw the default inspector properties
         DrawDefaultInspector();
         
-        // Get the target as LLMManager
-        LLMManager llmManager = (LLMManager)target;
+        // Get the target as ContentGenerator
+        ContentGenerator contentGenerator = (ContentGenerator)target;
         
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("Prompt Templates Editor", EditorStyles.boldLabel);
@@ -163,7 +624,7 @@ Character dialogue:"
                         textProperty.stringValue = newTemplateText;
                         
                         serializedObject.ApplyModifiedProperties();
-                        EditorUtility.SetDirty(llmManager);
+                        EditorUtility.SetDirty(contentGenerator);
                     }
                     
                     EditorGUILayout.Space(5);
@@ -177,7 +638,7 @@ Character dialogue:"
                         {
                             promptTemplatesProperty.DeleteArrayElementAtIndex(selectedTemplateIndex);
                             serializedObject.ApplyModifiedProperties();
-                            EditorUtility.SetDirty(llmManager);
+                            EditorUtility.SetDirty(contentGenerator);
                             
                             selectedTemplateIndex = -1;
                             newTemplateName = "";
@@ -240,12 +701,14 @@ Character dialogue:"
                             SerializedProperty newTemplate = promptTemplatesProperty.GetArrayElementAtIndex(promptTemplatesProperty.arraySize - 1);
                             SerializedProperty nameProperty = newTemplate.FindPropertyRelative("templateName");
                             SerializedProperty textProperty = newTemplate.FindPropertyRelative("templateText");
+                            SerializedProperty modelProperty = newTemplate.FindPropertyRelative("modelType");
                             
                             nameProperty.stringValue = newTemplateName;
                             textProperty.stringValue = newTemplateText;
+                            modelProperty.enumValueIndex = (int)ModelType.Lite; // Default to Lite model
                             
                             serializedObject.ApplyModifiedProperties();
-                            EditorUtility.SetDirty(llmManager);
+                            EditorUtility.SetDirty(contentGenerator);
                             
                             // Clear the fields
                             newTemplateName = "";
@@ -304,7 +767,7 @@ Character dialogue:"
                             }
                             
                             serializedObject.ApplyModifiedProperties();
-                            EditorUtility.SetDirty(llmManager);
+                            EditorUtility.SetDirty(contentGenerator);
                         }
                     }
                     else
@@ -314,12 +777,14 @@ Character dialogue:"
                         SerializedProperty newTemplate = promptTemplatesProperty.GetArrayElementAtIndex(promptTemplatesProperty.arraySize - 1);
                         SerializedProperty nameProperty = newTemplate.FindPropertyRelative("templateName");
                         SerializedProperty textProperty = newTemplate.FindPropertyRelative("templateText");
+                        SerializedProperty modelProperty = newTemplate.FindPropertyRelative("modelType");
                         
                         nameProperty.stringValue = defaultTemplate.Key;
                         textProperty.stringValue = defaultTemplate.Value;
+                        modelProperty.enumValueIndex = (int)ModelType.Lite; // Default to Lite model
                         
                         serializedObject.ApplyModifiedProperties();
-                        EditorUtility.SetDirty(llmManager);
+                        EditorUtility.SetDirty(contentGenerator);
                     }
                 }
             }
@@ -340,11 +805,13 @@ Character dialogue:"
                         SerializedProperty template = promptTemplatesProperty.GetArrayElementAtIndex(i);
                         SerializedProperty nameProperty = template.FindPropertyRelative("templateName");
                         SerializedProperty textProperty = template.FindPropertyRelative("templateText");
+                        SerializedProperty modelProperty = template.FindPropertyRelative("modelType");
                         
                         templates.Add(new LLMPromptTemplate 
                         { 
                             templateName = nameProperty.stringValue, 
-                            templateText = textProperty.stringValue 
+                            templateText = textProperty.stringValue,
+                            modelType = (ModelType) modelProperty.enumValueIndex
                         });
                     }
                     
@@ -385,7 +852,9 @@ Character dialogue:"
                                     {
                                         // Update existing template
                                         SerializedProperty textProperty = template.FindPropertyRelative("templateText");
+                                        SerializedProperty modelProperty = template.FindPropertyRelative("modelType");
                                         textProperty.stringValue = importedTemplate.templateText;
+                                        modelProperty.enumValueIndex = (int)importedTemplate.modelType;
                                         found = true;
                                         break;
                                     }
@@ -398,14 +867,16 @@ Character dialogue:"
                                     SerializedProperty newTemplate = promptTemplatesProperty.GetArrayElementAtIndex(promptTemplatesProperty.arraySize - 1);
                                     SerializedProperty nameProperty = newTemplate.FindPropertyRelative("templateName");
                                     SerializedProperty textProperty = newTemplate.FindPropertyRelative("templateText");
+                                    SerializedProperty modelProperty = newTemplate.FindPropertyRelative("modelType");
                                     
                                     nameProperty.stringValue = importedTemplate.templateName;
                                     textProperty.stringValue = importedTemplate.templateText;
+                                    modelProperty.enumValueIndex = (int)importedTemplate.modelType;
                                 }
                             }
                             
                             serializedObject.ApplyModifiedProperties();
-                            EditorUtility.SetDirty(llmManager);
+                            EditorUtility.SetDirty(contentGenerator);
                             
                             EditorUtility.DisplayDialog("Import Successful", 
                                 $"Imported {templateCollection.templates.Count} templates.", 
