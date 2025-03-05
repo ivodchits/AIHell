@@ -1,23 +1,24 @@
 ﻿[System.Serializable]
 public class GameSetting
 {
-    public string full_setting;
+    public string fullSetting;
+    public string briefSetting;
     public LevelSetting[] levels;
 
     public string Print()
     {
-        return $"Setting:\n{full_setting}\nLevels:\n{string.Join<LevelSetting>("\n", levels)}";
+        return $"Setting:\n{fullSetting}\nLevels:\n{string.Join<LevelSetting>("\n", levels)}";
     }
 }
 
 [System.Serializable]
 public class LevelSetting
 {
-    public string level_theme;
-    public string level_tone;
+    public string theme;
+    public string tone;
     
     public override string ToString()
     {
-        return $"Theme: {level_theme},\nTone: {level_tone}";
+        return $"Theme: {theme},\nTone: {tone}";
     }
 }

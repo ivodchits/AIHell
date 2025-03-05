@@ -19,33 +19,17 @@ public class LLMPromptTemplateEditor : Editor
             "GameSetting",
             @"You are a text adventure game narrative generator specializing in psychological horror.
 Create the setting and world description for a deeply unsettling psychological horror game.
-
-In this game, the player is a patient undergoing experimental psychiatric treatment. The treatment involves navigating through 5 progressively disturbing levels of their own subconscious mind.
-
-Dr. Cassius Mire is overseeing the treatment, but there's something unsettling about him. He is actually Lucifer in disguise, manipulating the patient's journey through their own personal hell.
-
-Create an atmospheric, disturbing setting description that:
-1. Establishes the psychological horror premise
-2. Creates a sense of isolation and disturbance
-3. Outlines that there will be 5 levels, each delving deeper into darker parts of the subconscious
-4. Suggests that the player might encounter manifestations of their fears and weaknesses
+In the game the player is in hell but doesn't know it yet. They travel through a series of levels, each with its own theme and tone.
+These level are an illusion created by Dr. Cassius Mire, a psychiatrist who is actually Lucifer in disguise.
+The purpose is to explore the player's psyche and exploit their fears.
+Get creative with the overall setting, it can be anything from an industrial complex to a space station.
 
 The setting should be vague enough to allow for personalization through gameplay, but specific enough to establish a cohesive world.
 Keep the description to 3-5 paragraphs, focusing on atmosphere rather than specific details.
 
-Answer in the following format:
-{{
-    ""full_setting"": ""{full_setting}"",
-    ""levels"": [
-        {{ ""level_number"": 1, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
-        {{ ""level_number"": 2, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
-        {{ ""level_number"": 3, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
-        {{ ""level_number"": 4, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
-        {{ ""level_number"": 5, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }}
-    ]
-}}
+Each consecutive level will be progressively more disturbing and psychologically challenging.
 
-Generate the game setting:"
+The game setting:"
         },
         {
             "SettingSummary",
@@ -53,7 +37,7 @@ Generate the game setting:"
 
 {full_setting}
 
-Create a concise summary (maximum 3 sentences) that captures the essential elements of the setting while maintaining the ominous tone."
+Create a concise summary (maximum 4 sentences) that captures the essential elements of the setting while maintaining the ominous tone."
         },
         {
             "RoomDescription",
@@ -200,7 +184,7 @@ The summary will be used for context in future game prompts, so include essentia
         {
             "LevelDescription",
             @"You are a text adventure game narrative generator specializing in psychological horror.
-Create an introduction for Level {level_number} of a psychological horror game.
+Create a description for Level {level_number} of a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this level and outline the main events that will occur.
 
 Consider these level parameters:
 - Difficulty: {difficulty_level}/10 (higher means more challenging gameplay)
@@ -209,6 +193,7 @@ Consider these level parameters:
 - Tone: ""{level_tone}""
 
 The player has just completed Level {previous_level_number} which was themed ""{previous_level_theme}"".
+The overall setting of the game is ""{setting_summary}"".
 
 Create a brief, atmospheric description that:
 1. Introduces the level's setting and psychological atmosphere
@@ -216,7 +201,7 @@ Create a brief, atmospheric description that:
 3. Establishes the overall mood appropriate to the difficulty and horror rating
 4. Provides subtle clues about what the player might encounter
 
-Keep the description concise yet evocative, approximately 3-5 sentences.
+Keep the description concise yet evocative, approximately 5-10 sentences.
 As the difficulty and horror score increase, the descriptions should become progressively more unsettling and foreboding.
 
 Generate the level description:"
@@ -224,7 +209,7 @@ Generate the level description:"
         {
             "FirstLevel",
             @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the first level description for a psychological horror game.
+Create the first level description for a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this level and outline the main events that will occur.
 
 Game Setting Context:
 {setting_summary}
@@ -239,13 +224,14 @@ Consider these level parameters:
 Create a brief, atmospheric description that:
 1. Introduces the first level's setting and psychological atmosphere
 2. Establishes a sense of disorientation appropriate for the beginning of the journey
-3. Hints at the theme of of the level and what it might mean for the player
-4. Sets up the initial psychological challenge
+3. Hints at what horrors might await the player
+4. Establishes the overall mood appropriate to the difficulty and horror rating
+5. Provides subtle clues about what the player might encounter
 
 Keep the description concise yet evocative, approximately 5-10 sentences.
 The description should be mildly unsettling, creating a feeling that something in this world is off.
 
-Generate the first level description:"
+Level description:"
         },
         {
             "LevelBrief",
@@ -257,16 +243,11 @@ Create a concise summary (2-3 sentences) that captures the essential theme, tone
         },
         {
             "NextLevel",
-            @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the next level description for a psychological horror game.
-
-Game Setting Context:
-{setting_summary}
-
-Previous Level Summary:
+            @"Here is what happened in the previous level:
 {previous_level_summary}
 
-Previous Doctor's Appointment Summary:
+At the end of the level the player was confronted by Dr. Cassius Mire, who is actually Lucifer in disguise.
+Here is the summary of their appointment:
 {previous_appointment_summary}
 
 Player's Psychological Profile:
@@ -279,8 +260,8 @@ Consider these level parameters:
 - Theme: ""{level_theme}""
 - Tone: ""{level_tone}""
 
-Create a brief, atmospheric description that:
-1. Introduces this level's setting and psychological atmosphere
+Create a brief, atmospheric description of the next level that:
+1. Introduces new level's setting and psychological atmosphere
 2. Builds upon the psychological journey established in previous levels
 3. Incorporates elements from the player's psychological profile, especially their fears and weaknesses
 4. Establishes a more intense challenge appropriate to the increased difficulty
@@ -288,9 +269,9 @@ Create a brief, atmospheric description that:
 The level should exploit the weaknesses and fears identified in the player's profile.
 As this is level {level_number}, the description should be progressively more disturbing than previous levels.
 
-Keep the description concise yet evocative, approximately 3-5 sentences.
+Keep the description concise yet evocative, approximately 5-10 sentences.
 
-Generate the next level description:"
+Next level description:"
         },
         {
             "FullLevelSummary",
@@ -302,7 +283,7 @@ Room Summaries:
 Doctor's Appointment Summary:
 {appointment_summary}
 
-Create a concise but complete summary (3-4 sentences) that captures:
+Create a concise but complete summary (10-30 sentences) that captures:
 1. The key psychological themes explored in this level
 2. Important choices or actions the player made
 3. Significant revelations or character encounters
@@ -332,7 +313,6 @@ Dr. Mire is actually Lucifer in disguise, manipulating the player's journey thro
 Important context:
 - For Level 1-2 appointments: Dr. Mire appears friendly but subtly manipulative
 - For Level 3-4 appointments: Dr. Mire becomes progressively more aggressive and targets player weaknesses
-- For Level 5: Dr. Mire's true nature becomes more apparent with demonic undertones
 
 Create a doctor's office scene where:
 1. Dr. Mire analyzes the player's actions during the level
@@ -351,12 +331,12 @@ Generate the doctor's office interaction:"
 
 {full_appointment}
 
-Create a concise summary (2-3 sentences) that captures:
+Create a concise summary (3-5 sentences) that captures:
 1. Dr. Mire's assessment and attitude toward the player
 2. Key psychological insights revealed about the player
 3. Any significant warnings or ominous statements made
 
-The summary should maintain the unsettling tone while extracting the most important psychological elements."
+The summary should extract the most important psychological elements."
         },
         {
             "GameIntroduction",

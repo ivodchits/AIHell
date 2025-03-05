@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public class Logger : MonoBehaviour
 {
+    [SerializeField] private StatisticsManager statisticsManager;
+    
     // Log collections
     private List<string> allLogs = new List<string>();
     private List<string> standardLogs = new List<string>();
@@ -29,6 +32,10 @@ public class Logger : MonoBehaviour
         .timestamp { color: #666; font-size: 0.9em; }
         img { max-width: 100%; margin-top: 10px; border: 1px solid #ddd; }
         h1 { color: #333; text-align: center; }
+        pre { background-color: #f8f8f8; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        code { font-family: Consolas, monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+        p { margin: 8px 0; }
+        .log-content { line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -61,12 +68,50 @@ public class Logger : MonoBehaviour
     }
     
     /// <summary>
+    /// Format plain text to be more readable in HTML
+    /// </summary>
+    private string FormatLogText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        // HTML encode special characters
+        text = System.Web.HttpUtility.HtmlEncode(text);
+
+        // Replace newlines with paragraph breaks
+        text = text.Replace("\r\n", "\n").Replace("\r", "\n");
+        text = Regex.Replace(text, @"\n{2,}", "</p><p>");
+        text = Regex.Replace(text, @"\n", "<br/>");
+
+        // If text starts with paragraph replacement, clean it
+        if (text.StartsWith("</p>"))
+            text = text.Substring(4);
+        
+        // If text doesn't start with a paragraph, wrap it
+        if (!text.StartsWith("<p>"))
+            text = "<p>" + text;
+            
+        // If text doesn't end with a paragraph, close it
+        if (!text.EndsWith("</p>"))
+            text += "</p>";
+        
+        // Format code blocks (text between triple backticks)
+        text = Regex.Replace(text, @"```([^`]+)```", "<pre><code>$1</code></pre>");
+        
+        // Format inline code (text between single backticks)
+        text = Regex.Replace(text, @"`([^`]+)`", "<code>$1</code>");
+        
+        return text;
+    }
+    
+    /// <summary>
     /// Logs a standard message
     /// </summary>
     public void Log(string log)
     {
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        string htmlLog = $"<div class='log-entry standard'><span class='timestamp'>[{timestamp}]</span> {log}</div>";
+        string formattedLog = FormatLogText(log);
+        string htmlLog = $"<div class='log-entry standard'><span class='timestamp'>[{timestamp}]</span> <div class='log-content'>{formattedLog}</div></div>";
         
         // Add to both logs
         allLogs.Add(htmlLog);
@@ -82,7 +127,8 @@ public class Logger : MonoBehaviour
     public void LogExtra(string log)
     {
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        string htmlLog = $"<div class='log-entry extra'><span class='timestamp'>[{timestamp}]</span> <strong>[EXTRA]</strong> {log}</div>";
+        string formattedLog = FormatLogText(log);
+        string htmlLog = $"<div class='log-entry extra'><span class='timestamp'>[{timestamp}]</span> <strong>[EXTRA]</strong> <div class='log-content'>{formattedLog}</div></div>";
         
         // Add only to all logs
         allLogs.Add(htmlLog);
@@ -110,18 +156,18 @@ public class Logger : MonoBehaviour
                 string imageExtension = Path.GetExtension(imagePath).ToLower().TrimStart('.');
                 
                 // Create HTML with embedded image
-                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> {Path.GetFileName(imagePath)}<br/>" +
+                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{Path.GetFileName(imagePath)}</p>" +
                            $"<img src='data:image/{imageExtension};base64,{base64Image}' alt='{Path.GetFileName(imagePath)}' /></div>";
             }
             catch (Exception e)
             {
                 // If there's an error, just link to the image
-                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> {imagePath} (Error embedding: {e.Message})</div>";
+                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{imagePath} (Error embedding: {e.Message})</p></div>";
             }
         }
         else
         {
-            imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> {imagePath} (File not found)</div>";
+            imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{imagePath} (File not found)</p></div>";
         }
         
         // Add to both logs
@@ -246,17 +292,17 @@ public class Logger : MonoBehaviour
     private void OnApplicationQuit()
     {
         // Log statistics data before quitting
-        if (StatisticsManager.Instance != null)
+        if (statisticsManager != null)
         {
             LogExtra("=== STATISTICS SUMMARY ===");
-            var categories = StatisticsManager.Instance.GetCategories();
+            var categories = statisticsManager.GetCategories();
             var prompt = 0;
             var response = 0;
             var total = 0;
             foreach (var category in categories)
             {
-                var p = StatisticsManager.Instance.GetPromptTokens(category);
-                var r = StatisticsManager.Instance.GetResponseTokens(category);
+                var p = statisticsManager.GetPromptTokens(category);
+                var r = statisticsManager.GetResponseTokens(category);
                 var t = p + r;
                 prompt += p;
                 response += r;

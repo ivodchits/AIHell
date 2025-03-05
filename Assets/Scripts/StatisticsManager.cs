@@ -3,26 +3,6 @@ using System.Collections.Generic;
 
 public class StatisticsManager : MonoBehaviour
 {
-    // Singleton instance
-    private static StatisticsManager _instance;
-    public static StatisticsManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<StatisticsManager>();
-                if (_instance == null)
-                {
-                    GameObject obj = new GameObject("StatisticsManager");
-                    _instance = obj.AddComponent<StatisticsManager>();
-                    DontDestroyOnLoad(obj); // Keep the statistics across scene changes
-                }
-            }
-            return _instance;
-        }
-    }
-
     // Dictionaries to track tokens by category
     private Dictionary<string, int> _promptTokensByCategory = new Dictionary<string, int>();
     private Dictionary<string, int> _responseTokensByCategory = new Dictionary<string, int>();
@@ -35,19 +15,6 @@ public class StatisticsManager : MonoBehaviour
     public int TotalPromptTokens => _totalPromptTokens;
     public int TotalResponseTokens => _totalResponseTokens;
     public int TotalTokens => _totalPromptTokens + _totalResponseTokens;
-
-    private void Awake()
-    {
-        // Ensure we only have one instance
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     /// <summary>
     /// Add token counts from an IResponse to the statistics

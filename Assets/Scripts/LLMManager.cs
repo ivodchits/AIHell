@@ -7,25 +7,7 @@ using UnityEngine.Networking;
 
 public class LLMManager : MonoBehaviour
 {
-    // Singleton instance
-    private static LLMManager _instance;
-    public static LLMManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<LLMManager>();
-                if (_instance == null)
-                {
-                    GameObject obj = new GameObject("LLMManager");
-                    _instance = obj.AddComponent<LLMManager>();
-                }
-            }
-            return _instance;
-        }
-    }
-    
+    [SerializeField] private StatisticsManager statisticsManager;
     // API settings
     [Header("Gemini API Settings")]
     [SerializeField] private string geminiApiKey = "AIzaSyAO3eBNDEw4gVi58sDnbDWAX03vTMMzBw8";
@@ -77,25 +59,6 @@ public class LLMManager : MonoBehaviour
                 throw exception;
                 
             return result;
-        }
-    }
-    
-    private void Awake()
-    {
-        // Ensure singleton behavior
-        if (_instance != null && _instance != this)
-        {
-            Destroy(this.gameObject);
-            return;
-        }
-        
-        _instance = this;
-        DontDestroyOnLoad(this.gameObject);
-        
-        // Try to load API key from PlayerPrefs if not set in inspector
-        if (string.IsNullOrEmpty(geminiApiKey))
-        {
-            geminiApiKey = PlayerPrefs.GetString("GeminiApiKey", "");
         }
     }
     
@@ -314,7 +277,7 @@ public class LLMManager : MonoBehaviour
                     try
                     {
                         var geminiResponse = JsonUtility.FromJson<GeminiResponse>(response);
-                        StatisticsManager.Instance.Add(chat.ChatName, geminiResponse);
+                        statisticsManager.Add(chat.ChatName, geminiResponse);
                         if (geminiResponse != null)
                         {
                             return geminiResponse.candidates[0].content.parts[0].text;
@@ -323,7 +286,7 @@ public class LLMManager : MonoBehaviour
                     catch (Exception)
                     {
                         var geminiResponse = JsonUtility.FromJson<GeminiResponseAlternative>(response);
-                        StatisticsManager.Instance.Add(chat.ChatName, geminiResponse);
+                        statisticsManager.Add(chat.ChatName, geminiResponse);
                         if (geminiResponse != null)
                         {
                             return geminiResponse.candidates[0].parts[0].text;
@@ -335,7 +298,7 @@ public class LLMManager : MonoBehaviour
                     // Parse Local LLM response (adjust based on your local LLM API format)
                     Debug.Log($"Raw LMStudio response:\n{response}");
                     var localResponse = JsonUtility.FromJson<LocalLLMResponse>(response);
-                    StatisticsManager.Instance.Add(chat.ChatName, localResponse);
+                    statisticsManager.Add(chat.ChatName, localResponse);
                     if (localResponse != null)
                     {
                         return localResponse.choices[0].message.content;

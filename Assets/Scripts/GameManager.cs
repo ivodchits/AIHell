@@ -8,14 +8,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] Logger logger;
     [SerializeField] LevelGenerator levelGenerator;
     [SerializeField] LevelVisualizer levelVisualizer;
+    [SerializeField] LLMManager llmManager;
+    [SerializeField] ContentGenerator contentGenerator;
 
     [Header("Game Data")]
     [SerializeField] bool useDefaultData;
     [SerializeField] string[] defaultLevelThemes;
     [SerializeField] string[] defaultLevelTones;
-    
-    LLMManager llmManager => LLMManager.Instance;
-    ContentGenerator contentGenerator => ContentGenerator.Instance;
     
     GameSession session = new ();
 
@@ -37,33 +36,44 @@ public class GameManager : MonoBehaviour
         var settingChat = new LLMChat("Setting", LLMProvider.Gemini, ModelType.Flash);
         var settingTask = contentGenerator.GenerateGameSetting(settingChat);
         yield return WaitForTask(settingTask);
-        try
+        session.Setting = new GameSetting { fullSetting = settingTask.Result };
+        if (!useDefaultData)
         {
-            session.Setting = JsonUtility.FromJson<GameSetting>(settingTask.Result);
+            settingChat.ConvertToLocal();
+            for (int i = 0; i < 5; i++)
+            {
+                var task = llmManager.SendPromptToLLM($"Answer with 1 sentence. Level {i + 1} theme:", settingChat);
+                yield return WaitForTask(task);
+                var levelTheme = task.Result;
+                task = llmManager.SendPromptToLLM($"Answer with 1 sentence. Level {i + 1} tone:", settingChat);
+                yield return WaitForTask(task);
+                var levelTone = task.Result;
+                session.Setting.levels[i] = new LevelSetting
+                {
+                    theme = levelTheme,
+                    tone = levelTone
+                };
+            }
         }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            session.Setting = new GameSetting { full_setting = settingTask.Result };
-        }
-        if (session.Setting.levels == null || useDefaultData)
+        else
         {
             session.Setting.levels = new LevelSetting[defaultLevelThemes.Length];
             for (int i = 0; i < defaultLevelThemes.Length; i++)
             {
                 session.Setting.levels[i] = new LevelSetting
                 {
-                    level_theme = defaultLevelThemes[i],
-                    level_tone = defaultLevelTones[i]
+                    theme = defaultLevelThemes[i],
+                    tone = defaultLevelTones[i]
                 };
             }
         }
         logger.LogExtra("Setting:\n" + session.Setting.Print());
         
         var settingSummaryChat = new LLMChat("Setting Summary", LLMProvider.LocalLLM, ModelType.Flash);
-        var settingSummaryTask = contentGenerator.GenerateSettingSummary(session.Setting.full_setting, settingSummaryChat);
+        var settingSummaryTask = contentGenerator.GenerateSettingSummary(session.Setting.fullSetting, settingSummaryChat);
         yield return WaitForTask(settingSummaryTask);
         session.SettingSummary = settingSummaryTask.Result;
+        session.Setting.briefSetting = session.SettingSummary;
         logger.LogExtra("Setting Summary:\n" + session.SettingSummary);
     }
 

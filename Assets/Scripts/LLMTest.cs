@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class LLMTest : MonoBehaviour
 {
+    [SerializeField] LLMManager llmManager;
     [SerializeField] LLMProvider llmProvider;
     [SerializeField] ModelType modelType;
     [SerializeField] TMP_InputField inputField;
@@ -19,7 +20,7 @@ public class LLMTest : MonoBehaviour
     {
         string input = inputField.text;
         outputText.text = "Generating...";
-        var task = LLMManager.Instance.SendPromptToLLM(input, chat);
+        var task = llmManager.SendPromptToLLM(input, chat);
         var awaiter = task.GetAwaiter();
         awaiter.OnCompleted(() => ShowOutput(awaiter.GetResult()));
     }

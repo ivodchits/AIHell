@@ -7,40 +7,9 @@ using UnityEngine;
 /// </summary>
 public class ContentGenerator : MonoBehaviour
 {
-    // Singleton instance
-    private static ContentGenerator _instance;
-    public static ContentGenerator Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<ContentGenerator>();
-                if (_instance == null)
-                {
-                    GameObject obj = new GameObject("ContentGenerator");
-                    _instance = obj.AddComponent<ContentGenerator>();
-                }
-            }
-            return _instance;
-        }
-    }
-
+    [SerializeField] private LLMManager llmManager;
     [Header("Prompt Templates")]
     [SerializeField] private List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
-
-    private void Awake()
-    {
-        // Ensure singleton behavior
-        if (_instance != null && _instance != this)
-        {
-            Destroy(this.gameObject);
-            return;
-        }
-        
-        _instance = this;
-        DontDestroyOnLoad(this.gameObject);
-    }
     
     /// <summary>
     /// Gets a prompt template by name
@@ -113,7 +82,7 @@ public class ContentGenerator : MonoBehaviour
     {
         var promptTemplate = GetPromptTemplate("GameSetting");
         
-        return await LLMManager.Instance.SendPromptToLLM(promptTemplate.templateText, chat);
+        return await llmManager.SendPromptToLLM(promptTemplate.templateText, chat);
     }
     
     /// <summary>
@@ -132,7 +101,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -155,7 +124,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     #endregion
@@ -176,13 +145,13 @@ public class ContentGenerator : MonoBehaviour
         {
             { "level_number", levelNumber.ToString() },
             { "level_description", levelDescription },
-            { "level_theme", levelSetting.level_theme },
-            { "level_tone", levelSetting.level_tone }
+            { "level_theme", levelSetting.theme },
+            { "level_tone", levelSetting.tone }
         };
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -199,13 +168,13 @@ public class ContentGenerator : MonoBehaviour
         {
             { "level_number", levelNumber.ToString() },
             { "level_description", levelDescription },
-            { "level_theme", levelSetting.level_theme },
-            { "level_tone", levelSetting.level_tone }
+            { "level_theme", levelSetting.theme },
+            { "level_tone", levelSetting.tone }
         };
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -219,7 +188,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("NextRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -233,7 +202,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("ExitRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -247,7 +216,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("RevisitedRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -266,7 +235,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -288,14 +257,14 @@ public class ContentGenerator : MonoBehaviour
         Dictionary<string, string> context = new Dictionary<string, string>
         {
             { "setting_summary", settingSummary },
-            { "level_theme", levelSetting.level_theme },
-            { "level_tone", levelSetting.level_tone }
+            { "level_theme", levelSetting.theme },
+            { "level_tone", levelSetting.tone }
         };
         
         //TODO: Add game state to context
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -311,13 +280,13 @@ public class ContentGenerator : MonoBehaviour
         Dictionary<string, string> context = new Dictionary<string, string>
         {
             { "setting_summary", settingSummary },
-            { "level_theme", levelSetting.level_theme },
-            { "level_tone", levelSetting.level_tone }
+            { "level_theme", levelSetting.theme },
+            { "level_tone", levelSetting.tone }
         };
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -336,7 +305,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -352,7 +321,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("NextLevel");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -366,7 +335,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, null);
         
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -386,7 +355,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("DoctorOffice");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, doctorContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -405,7 +374,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -421,7 +390,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("FinalConfrontation");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, endgameContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     #endregion
@@ -439,7 +408,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("GameIntroduction");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -459,7 +428,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -472,7 +441,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("PlayerProfile");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, profileContext, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -518,7 +487,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("EventDescription");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, eventContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -538,7 +507,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, fullContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -552,7 +521,7 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("GameOver");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -566,6 +535,6 @@ public class ContentGenerator : MonoBehaviour
         var promptTemplate = GetPromptTemplate("Victory");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
 }
