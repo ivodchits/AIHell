@@ -6,15 +6,15 @@ using System.Linq;
 public class Level
 {
     // Grid dimensions
-    private int width;
-    private int height;
+    int width;
+    int height;
     
     // Rooms in this level
-    private Dictionary<Vector2Int, Room> rooms = new Dictionary<Vector2Int, Room>();
+    Dictionary<Vector2Int, Room> rooms = new Dictionary<Vector2Int, Room>();
     
     // Special rooms
-    private Room entranceRoom;
-    private Room exitRoom;
+    Room entranceRoom;
+    Room exitRoom;
     
     // Level index
     public int LevelIndex { get; private set; }
@@ -27,8 +27,8 @@ public class Level
         
         GenerateLevel(roomCount);
     }
-    
-    private void GenerateLevel(int roomCount)
+
+    void GenerateLevel(int roomCount)
     {
         // Clear any existing rooms
         rooms.Clear();
@@ -83,8 +83,8 @@ public class Level
         // Final pass to add some loops to make it more interesting
         AddRandomConnections(roomCount / 10);
     }
-    
-    private List<Direction> GetAvailableDirections(Vector2Int position)
+
+    List<Direction> GetAvailableDirections(Vector2Int position)
     {
         List<Direction> availableDirections = new List<Direction>();
         
@@ -101,27 +101,27 @@ public class Level
         
         return availableDirections;
     }
-    
-    private bool IsWithinBounds(Vector2Int position)
+
+    bool IsWithinBounds(Vector2Int position)
     {
         return position.x >= 0 && position.x < width && 
                position.y >= 0 && position.y < height;
     }
-    
-    private Room CreateRoom(Vector2Int position)
+
+    Room CreateRoom(Vector2Int position)
     {
         Room room = new Room(position);
         rooms[position] = room;
         return room;
     }
-    
-    private void ConnectRooms(Room room1, Room room2, Direction direction)
+
+    void ConnectRooms(Room room1, Room room2, Direction direction)
     {
         room1.AddConnection(direction, room2);
         room2.AddConnection(direction.GetOpposite(), room1);
     }
-    
-    private Room FindFarthestRoom(Room startRoom)
+
+    Room FindFarthestRoom(Room startRoom)
     {
         // Reset visited status for all rooms
         foreach (Room room in rooms.Values)
@@ -175,8 +175,8 @@ public class Level
         
         return farthestRoom;
     }
-    
-    private void AddRandomConnections(int connectionCount)
+
+    void AddRandomConnections(int connectionCount)
     {
         // Add a few random connections to create loops
         for (int i = 0; i < connectionCount; i++)

@@ -4,7 +4,7 @@ using UnityEditor;
 [CustomEditor(typeof(LevelVisualizer))]
 public class LevelVisualizerEditor : Editor
 {
-    private int selectedLevelIndex = 0;
+    int selectedLevelIndex = 0;
     
     public override void OnInspectorGUI()
     {

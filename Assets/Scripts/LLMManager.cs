@@ -7,34 +7,38 @@ using UnityEngine.Networking;
 
 public class LLMManager : MonoBehaviour
 {
-    [SerializeField] private StatisticsManager statisticsManager;
+    [SerializeField] StatisticsManager statisticsManager;
     // API settings
     [Header("Gemini API Settings")]
-    [SerializeField] private string geminiApiKey = "AIzaSyAO3eBNDEw4gVi58sDnbDWAX03vTMMzBw8";
-    [SerializeField] private string geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{0}:generateContent";
-    [SerializeField] private float geminiTemperature = 0.7f;
-    [SerializeField] private int maxOutputTokens = 1024;
-    [SerializeField] private ModelData[] models;
+    [SerializeField]
+    string geminiApiKey = "AIzaSyAO3eBNDEw4gVi58sDnbDWAX03vTMMzBw8";
+    [SerializeField] string geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{0}:generateContent";
+    [SerializeField] float geminiTemperature = 0.7f;
+    [SerializeField] int maxOutputTokens = 1024;
+    [SerializeField] ModelData[] models;
     
     [Header("Local LLM Settings")]
-    [SerializeField] private string localLLMApiUrl = "http://localhost:8000/api/generate";
-    [SerializeField] private float localLLMTemperature = 0.7f;
-    [SerializeField] private ModelData[] localModels;
+    [SerializeField]
+    string localLLMApiUrl = "http://localhost:8000/api/generate";
+    [SerializeField] float localLLMTemperature = 0.7f;
+    [SerializeField] ModelData[] localModels;
     
     [Header("Rate Limiting")]
-    [SerializeField] private float minTimeBetweenRequests = 1.0f;
-    private float lastRequestTime = 0f;
+    [SerializeField]
+    float minTimeBetweenRequests = 1.0f;
+
+    float lastRequestTime = 0f;
     
     // Fallback mechanism
-    [SerializeField] private bool useLocalLLMFallback = true;
-    [SerializeField] private int maxRetryAttempts = 3;
+    [SerializeField] bool useLocalLLMFallback = true;
+    [SerializeField] int maxRetryAttempts = 3;
     
     // For task completion and callbacks
-    private class TaskCompletionSource<T>
+    class TaskCompletionSource<T>
     {
-        private bool isCompleted = false;
-        private T result;
-        private Exception exception;
+        bool isCompleted = false;
+        T result;
+        Exception exception;
         
         public bool IsCompleted => isCompleted;
         
@@ -165,7 +169,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to Gemini
     /// </summary>
-    private IEnumerator SendPromptToGeminiCoroutine(LLMChat chat, Action<string> onSuccess, Action<Exception> onError)
+    IEnumerator SendPromptToGeminiCoroutine(LLMChat chat, Action<string> onSuccess, Action<Exception> onError)
     {
         if (string.IsNullOrEmpty(geminiApiKey))
         {
@@ -221,7 +225,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to local LLM
     /// </summary>
-    private IEnumerator SendPromptToLocalLLMCoroutine(LLMChat chat, Action<string> onSuccess,
+    IEnumerator SendPromptToLocalLLMCoroutine(LLMChat chat, Action<string> onSuccess,
         Action<Exception> onError)
     {
         // Create the request payload in the same format as Gemini
@@ -265,7 +269,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Parses the LLM response based on the provider
     /// </summary>
-    private string ParseLLMResponse(string response, LLMChat chat)
+    string ParseLLMResponse(string response, LLMChat chat)
     {
         try
         {
@@ -319,7 +323,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Escapes a string for use in JSON
     /// </summary>
-    private string EscapeJsonString(string input)
+    string EscapeJsonString(string input)
     {
         if (string.IsNullOrEmpty(input))
         {

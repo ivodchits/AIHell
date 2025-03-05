@@ -5,24 +5,24 @@ using UnityEngine.UI; // Added for UI components
 
 public class LevelVisualizer : MonoBehaviour
 {
-    [SerializeField] private LevelGenerator levelGenerator;
-    [SerializeField] private RectTransform contentParent; // Changed to RectTransform for UI
-    [SerializeField] private GameObject roomPrefab;
-    [SerializeField] private GameObject entrancePrefab;
-    [SerializeField] private GameObject exitPrefab;
-    [SerializeField] private GameObject doorPrefab;
-    [SerializeField] private GameObject playerMarkerPrefab; // Added: Player marker prefab
-    [SerializeField] private Color currentRoomHighlightColor = Color.yellow; // Added: Color to highlight current room
-    [SerializeField] private float roomSpacing = 100f; // Increased spacing for UI scale
-    
-    private Dictionary<Vector2Int, GameObject> roomObjects = new Dictionary<Vector2Int, GameObject>();
-    private List<GameObject> doorObjects = new List<GameObject>();
-    private GameObject playerMarker; // Added: Reference to player marker object
-    private Vector2Int currentPlayerPosition; // Added: Tracks current player position
-    private Room currentPlayerRoom; // Added: Reference to current player room
+    [SerializeField] LevelGenerator levelGenerator;
+    [SerializeField] RectTransform contentParent; // Changed to RectTransform for UI
+    [SerializeField] GameObject roomPrefab;
+    [SerializeField] GameObject entrancePrefab;
+    [SerializeField] GameObject exitPrefab;
+    [SerializeField] GameObject doorPrefab;
+    [SerializeField] GameObject playerMarkerPrefab; // Added: Player marker prefab
+    [SerializeField] Color currentRoomHighlightColor = Color.yellow; // Added: Color to highlight current room
+    [SerializeField] float roomSpacing = 100f; // Increased spacing for UI scale
+
+    Dictionary<Vector2Int, GameObject> roomObjects = new Dictionary<Vector2Int, GameObject>();
+    List<GameObject> doorObjects = new List<GameObject>();
+    GameObject playerMarker; // Added: Reference to player marker object
+    Vector2Int currentPlayerPosition; // Added: Tracks current player position
+    Room currentPlayerRoom; // Added: Reference to current player room
     
     // Reference to the current level being visualized
-    private Level currentLevel;
+    Level currentLevel;
     
     // Call this to visualize the current level
     public void VisualizeCurrentLevel()
@@ -86,7 +86,7 @@ public class LevelVisualizer : MonoBehaviour
     }
     
     // Create GameObjects for each room in the level
-    private void CreateRoomObjects()
+    void CreateRoomObjects()
     {
         foreach (Room room in currentLevel.GetAllRooms())
         {
@@ -126,7 +126,7 @@ public class LevelVisualizer : MonoBehaviour
     }
     
     // Create door connections between rooms
-    private void CreateDoorConnections()
+    void CreateDoorConnections()
     {
         // Create doors for each room connection
         foreach (Room room in currentLevel.GetAllRooms())
@@ -177,7 +177,7 @@ public class LevelVisualizer : MonoBehaviour
     }
     
     // Center the content in the parent container
-    private void CenterContent()
+    void CenterContent()
     {
         if (roomObjects.Count == 0 || contentParent == null)
             return;

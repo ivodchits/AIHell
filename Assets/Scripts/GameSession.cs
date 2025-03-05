@@ -19,8 +19,7 @@ public class GameSession
     
     // Room tracking
     public string CurrentRoomDescription { get; set; }
-    public List<string> VisitedRooms { get; set; } = new List<string>();
-    public List<string> RoomSummaries { get; set; } = new List<string>();
+    public Dictionary<Vector2Int, CompletedRoomData> VisitedRooms { get; set; } = new ();
     public List<string> GameFlowHistory { get; set; } = new List<string>();
     public int RoomsCleared { get; set; } = 0;
     
@@ -53,8 +52,7 @@ public class GameSession
         // Initialize with default values
         LevelSummaries = new List<string>();
         AppointmentSummaries = new List<string>();
-        VisitedRooms = new List<string>();
-        RoomSummaries = new List<string>();
+        VisitedRooms = new();
         GameFlowHistory = new List<string>();
         CurrentConversation = new List<string>();
         PlayerProfile = new PlayerProfile();
@@ -71,7 +69,6 @@ public class GameSession
         CurrentLevel++;
         RoomsCleared = 0;
         VisitedRooms.Clear();
-        RoomSummaries.Clear();
         GameFlowHistory.Clear();
         CurrentRoomDescription = string.Empty;
         ResetGameFlow();
@@ -81,9 +78,13 @@ public class GameSession
         CurrentRoomType = RoomType.None;
     }
     
-    public void AddRoomSummary(string summary)
+    public void AddRoomSummary(Room room, string summary, string revisitDescription)
     {
-        RoomSummaries.Add(summary);
+        VisitedRooms.Add(room.Position, new CompletedRoomData
+        {
+            RoomSummary = summary,
+            RevisitDescription = revisitDescription
+        });
         RoomsCleared++;
     }
     
@@ -97,6 +98,13 @@ public class GameSession
         IsInExitRoom = (roomType == RoomType.Exit);
         IsInDoctorsOffice = (roomType == RoomType.DoctorOffice);
     }
+}
+
+[Serializable]
+public class CompletedRoomData
+{
+    public string RoomSummary;
+    public string RevisitDescription;
 }
 
 /// <summary>

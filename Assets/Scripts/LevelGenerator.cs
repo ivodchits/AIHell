@@ -5,15 +5,16 @@ using UnityEngine;
 public class LevelGenerator : MonoBehaviour
 {
     [Header("Level Generation Settings")]
-    [SerializeField] private int[] roomsPerLevel = new int[] { 20, 30, 40, 50, 60 }; // Default room counts per level
-    [SerializeField] private int maxLevelWidth = 20;
-    [SerializeField] private int maxLevelHeight = 20;
+    [SerializeField]
+    int[] roomsPerLevel = new int[] { 20, 30, 40, 50, 60 }; // Default room counts per level
+    [SerializeField] int maxLevelWidth = 20;
+    [SerializeField] int maxLevelHeight = 20;
     
     // List of generated levels
-    private List<Level> levels = new List<Level>();
+    List<Level> levels = new List<Level>();
     
     // Current level index
-    private int currentLevelIndex = 0;
+    int currentLevelIndex = 0;
     
     public void GenerateAllLevels()
     {
@@ -42,6 +43,14 @@ public class LevelGenerator : MonoBehaviour
             levels.Add(level);
             
             Debug.Log($"Generated Level {i} with {level.GetRoomCount()} rooms");
+        }
+
+        foreach (var level in levels)
+        {
+            foreach (var room in level.GetAllRooms())
+            {
+                room.Visited = false;
+            }
         }
     }
     

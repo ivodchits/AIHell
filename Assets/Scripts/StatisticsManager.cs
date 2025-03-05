@@ -4,12 +4,12 @@ using System.Collections.Generic;
 public class StatisticsManager : MonoBehaviour
 {
     // Dictionaries to track tokens by category
-    private Dictionary<string, int> _promptTokensByCategory = new Dictionary<string, int>();
-    private Dictionary<string, int> _responseTokensByCategory = new Dictionary<string, int>();
+    Dictionary<string, int> _promptTokensByCategory = new Dictionary<string, int>();
+    Dictionary<string, int> _responseTokensByCategory = new Dictionary<string, int>();
     
     // Total token counts
-    private int _totalPromptTokens = 0;
-    private int _totalResponseTokens = 0;
+    int _totalPromptTokens = 0;
+    int _totalResponseTokens = 0;
 
     // Properties to access totals
     public int TotalPromptTokens => _totalPromptTokens;

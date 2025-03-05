@@ -6,14 +6,14 @@ using System.Collections.Generic;
 [CustomEditor(typeof(ContentGenerator))]
 public class LLMPromptTemplateEditor : Editor
 {
-    private bool showTemplateEditor = false;
-    private string newTemplateName = "";
-    private string newTemplateText = "";
-    private Vector2 templateTextScrollPos;
-    private int selectedTemplateIndex = -1;
+    bool showTemplateEditor = false;
+    string newTemplateName = "";
+    string newTemplateText = "";
+    Vector2 templateTextScrollPos;
+    int selectedTemplateIndex = -1;
     
     // Default templates to offer
-    private readonly Dictionary<string, string> defaultTemplates = new Dictionary<string, string>
+    readonly Dictionary<string, string> defaultTemplates = new Dictionary<string, string>
     {
         {
             "GameSetting",
@@ -43,16 +43,24 @@ Create a concise summary (maximum 4 sentences) that captures the essential eleme
             "RoomDescription",
             @"You are a text adventure game narrative generator specializing in psychological horror.
 The player is entering a new room in Level {level_number}, themed ""{level_theme}"".
-The overall tone of this level is ""{level_tone}"". The room archetype is ""{room_archetype}"".
+The overall tone of this level is ""{level_tone}"".
+
+Here is the level description:
+{level_description_brief}
+
+Here is what happened in the rooms before:
+{previous_rooms_summary}
 
 Considering the player's psychological profile, which currently indicates:
 - Aggression Level: {player_aggression_level}
 - Curiosity Level: {player_curiosity_level}
 
-Describe this room in vivid detail, focusing on sensory details and unsettling atmosphere.
-The description should evoke feelings of {level_emotion}.
+Describe this room in detail, focusing on contents and events happening in the room.
 Keep the description concise yet impactful, approximately 5-10 sentences.
-Highlight potentially disturbing or unusual elements within the room.
+Highlight potentially disturbing or unusual elements within the room. The player may meet new or previously met characters here.
+
+Important: The player MUST solve something or complete some action to leave this room. Make this condition clear in the description.
+The player won't see this description, so it can be more technical and specific.
 
 Generate the room description:"
         },
@@ -77,8 +85,9 @@ The room should establish the atmosphere while suggesting that darker elements a
 The condition for proceeding should be clear but not immediately obvious - the player should need to interact with the environment.
 
 Important: The player MUST solve something or complete some action to leave this room. Make this condition clear in the description.
+The player won't see this description, so it can be more technical and specific.
 
-Keep the description to 4-10 sentences, focusing on sensory details and psychological impact.
+Keep the description to 4-10 sentences, focusing on contents and events happening in the room.
 
 Generate the first room description:"
         },
@@ -886,7 +895,7 @@ Write the image generation prompt in a format optimal for image AI (without ment
     }
     
     [System.Serializable]
-    private class TemplateCollection
+    class TemplateCollection
     {
         public List<LLMPromptTemplate> templates;
     }

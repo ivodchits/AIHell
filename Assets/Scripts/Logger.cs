@@ -7,18 +7,18 @@ using UnityEngine;
 
 public class Logger : MonoBehaviour
 {
-    [SerializeField] private StatisticsManager statisticsManager;
+    [SerializeField] StatisticsManager statisticsManager;
     
     // Log collections
-    private List<string> allLogs = new List<string>();
-    private List<string> standardLogs = new List<string>();
+    List<string> allLogs = new List<string>();
+    List<string> standardLogs = new List<string>();
 
     // File paths
-    private string allLogsFilePath;
-    private string standardLogsFilePath;
+    string allLogsFilePath;
+    string standardLogsFilePath;
     
     // HTML styling
-    private const string HTML_HEAD = @"<!DOCTYPE html>
+    const string HTML_HEAD = @"<!DOCTYPE html>
 <html>
 <head>
     <title>AIHell Logs</title>
@@ -43,12 +43,12 @@ public class Logger : MonoBehaviour
     <h1>AIHell Log Report</h1>
 ";
 
-    private const string HTML_FOOTER = @"
+    const string HTML_FOOTER = @"
     </div>
 </body>
 </html>";
-    
-    private void Awake()
+
+    void Awake()
     {
         // Initialize file paths in persistent data path
         string logDirectory = Path.Combine(Application.persistentDataPath, "Logs");
@@ -70,7 +70,7 @@ public class Logger : MonoBehaviour
     /// <summary>
     /// Format plain text to be more readable in HTML
     /// </summary>
-    private string FormatLogText(string text)
+    string FormatLogText(string text)
     {
         if (string.IsNullOrEmpty(text))
             return string.Empty;
@@ -232,7 +232,7 @@ public class Logger : MonoBehaviour
     /// <summary>
     /// Saves logs as a complete HTML file
     /// </summary>
-    private void SaveHtmlLog(string filePath, List<string> logs)
+    void SaveHtmlLog(string filePath, List<string> logs)
     {
         StringBuilder sb = new StringBuilder();
         sb.Append(HTML_HEAD);
@@ -250,7 +250,7 @@ public class Logger : MonoBehaviour
     /// <summary>
     /// Appends logs to an existing HTML file or creates a new one
     /// </summary>
-    private void AppendToHtmlLog(string filePath, List<string> logs)
+    void AppendToHtmlLog(string filePath, List<string> logs)
     {
         StringBuilder sb = new StringBuilder();
         
@@ -288,8 +288,8 @@ public class Logger : MonoBehaviour
         // Write back to file
         File.WriteAllText(filePath, sb.ToString());
     }
-    
-    private void OnApplicationQuit()
+
+    void OnApplicationQuit()
     {
         // Log statistics data before quitting
         if (statisticsManager != null)

@@ -26,12 +26,13 @@ public class GameManager : MonoBehaviour
         yield return CreateLevel(session.CurrentLevel);
         
         session.CurrentRoomType = RoomType.Entrance;
-        yield return CreateRoom(session.CurrentLevel, session.RoomsCleared, session.Setting.levels[0], session.CurrentRoomType);
+        var room = levelVisualizer.GetCurrentPlayerRoom();
+        yield return CreateRoom(room, session.CurrentLevel, session.RoomsCleared, session.Setting.levels[0], session.CurrentRoomType);
         
         levelVisualizer.VisualizeCurrentLevel();
     }
 
-    private IEnumerator CreateSetting()
+    IEnumerator CreateSetting()
     {
         var settingChat = new LLMChat("Setting", LLMProvider.Gemini, ModelType.Flash);
         var settingTask = contentGenerator.GenerateGameSetting(settingChat);
@@ -67,35 +68,36 @@ public class GameManager : MonoBehaviour
                 };
             }
         }
-        logger.LogExtra("Setting:\n" + session.Setting.Print());
+        logger.LogExtra("<b>Setting</b>\n" + session.Setting.Print());
         
         var settingSummaryChat = new LLMChat("Setting Summary", LLMProvider.LocalLLM, ModelType.Flash);
         var settingSummaryTask = contentGenerator.GenerateSettingSummary(session.Setting.fullSetting, settingSummaryChat);
         yield return WaitForTask(settingSummaryTask);
         session.SettingSummary = settingSummaryTask.Result;
         session.Setting.briefSetting = session.SettingSummary;
-        logger.LogExtra("Setting Summary:\n" + session.SettingSummary);
+        logger.LogExtra("<b>Setting Summary</b>\n" + session.SettingSummary);
     }
 
-    private IEnumerator CreateLevel(int index)
+    IEnumerator CreateLevel(int index)
     {
         var levelChat = new LLMChat("Level Description", LLMProvider.Gemini, ModelType.Flash);
-        var levelSetting = session.Setting.levels[index];
+        var levelSetting = session.Setting.levels[index - 1];
         var levelTask = index == 0
             ? contentGenerator.GenerateFirstLevelDescription(session.SettingSummary, levelSetting, levelChat)
             : contentGenerator.GenerateLevelDescription(session.SettingSummary, levelSetting, levelChat);
         yield return WaitForTask(levelTask);
         session.CurrentLevelDescription = levelTask.Result;
-        logger.LogExtra($"Level {index + 1} Description:\n{session.CurrentLevelDescription}");
+        logger.LogExtra($"<b>Level {index} Description</b>\n{session.CurrentLevelDescription}");
         
         var levelSummaryChat = new LLMChat("Level Description Brief", LLMProvider.LocalLLM, ModelType.Flash);
         var levelSummaryTask = contentGenerator.GenerateLevelBrief(session.CurrentLevelDescription, levelSummaryChat);
         yield return WaitForTask(levelSummaryTask);
         session.CurrentLevelSummary = levelSummaryTask.Result;
-        logger.LogExtra($"Level {index + 1} Description Brief:\n{session.CurrentLevelSummary}");
+        logger.LogExtra($"<b>Level {index} Description Brief</b>\n{session.CurrentLevelSummary}");
     }
 
-    private IEnumerator CreateRoom(int currentLevel, int clearedRooms, LevelSetting levelSetting, RoomType roomType)
+    IEnumerator CreateRoom(Room room, int currentLevel, int clearedRooms, LevelSetting levelSetting,
+        RoomType roomType)
     {
         var roomChat = new LLMChat("Room Description", LLMProvider.Gemini, ModelType.Flash);
 
@@ -108,10 +110,11 @@ public class GameManager : MonoBehaviour
                     : contentGenerator.GenerateDoctorInteraction(null, null, roomChat);
         yield return WaitForTask(roomTask);
         session.CurrentRoomDescription = roomTask.Result;
-        logger.LogExtra($"Room {currentLevel + 1}_{clearedRooms} Description:\n{session.CurrentRoomDescription}");
+        room.Visited = true;
+        logger.LogExtra($"<b>Room {currentLevel}_{room.Position.x}.{room.Position.y} Description</b>\n{session.CurrentRoomDescription}");
     }
 
-    private IEnumerator WaitForTask(Task<string> task)
+    IEnumerator WaitForTask(Task<string> task)
     {
         while (!task.IsCompleted)
         {

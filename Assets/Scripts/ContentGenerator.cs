@@ -7,9 +7,10 @@ using UnityEngine;
 /// </summary>
 public class ContentGenerator : MonoBehaviour
 {
-    [SerializeField] private LLMManager llmManager;
+    [SerializeField] LLMManager llmManager;
     [Header("Prompt Templates")]
-    [SerializeField] private List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
+    [SerializeField]
+    List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
     
     /// <summary>
     /// Gets a prompt template by name
