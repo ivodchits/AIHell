@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -26,10 +25,6 @@ public class LLMManager : MonoBehaviour
             return _instance;
         }
     }
-
-    // Current LLM provider
-    [SerializeField]
-    private LLMProvider currentProvider = LLMProvider.Gemini;
     
     // API settings
     [Header("Gemini API Settings")]
@@ -42,6 +37,7 @@ public class LLMManager : MonoBehaviour
     [Header("Local LLM Settings")]
     [SerializeField] private string localLLMApiUrl = "http://localhost:8000/api/generate";
     [SerializeField] private float localLLMTemperature = 0.7f;
+    [SerializeField] private ModelData[] localModels;
     
     [Header("Rate Limiting")]
     [SerializeField] private float minTimeBetweenRequests = 1.0f;
@@ -103,18 +99,6 @@ public class LLMManager : MonoBehaviour
         }
     }
     
-    public LLMProvider CurrentProvider => currentProvider;
-
-    /// <summary>
-    /// Set the active LLM provider
-    /// </summary>
-    /// <param name="provider">The LLM provider to use</param>
-    public void SetLLMProvider(LLMProvider provider)
-    {
-        currentProvider = provider;
-        Debug.Log($"LLM Provider set to: {provider}");
-    }
-    
     /// <summary>
     /// Set the Gemini API key (can be used at runtime)
     /// </summary>
@@ -124,14 +108,23 @@ public class LLMManager : MonoBehaviour
         geminiApiKey = apiKey;
         PlayerPrefs.SetString("GeminiApiKey", apiKey);
     }
-    
+
     /// <summary>
     /// Sends a prompt to the current LLM provider
     /// </summary>
     /// <param name="prompt">The prompt to send</param>
     /// <param name="modelType">The model to use</param>
     /// <returns>LLM response text</returns>
-    public async Task<string> SendPromptToLLM(string prompt, ModelType modelType, int retryCount = 0)
+    public async Task<string> SendPromptToLLM(string prompt, LLMChat chat, int retryCount = 0)
+    {
+        var processedPrompt = EscapeJsonString(prompt); 
+        Debug.Log($"Sending prompt to LLM (provider {chat.LLMProvider}, model type {chat.ModelType}):\n{processedPrompt}");
+        
+        chat.AddEntry(new ChatEntry(isUser: true, processedPrompt));
+        return await SendPromptToLLM(chat, retryCount);
+    }
+    
+    async Task<string> SendPromptToLLM(LLMChat chat, int retryCount = 0)
     {
         // Rate limiting
         float timeSinceLastRequest = Time.time - lastRequestTime;
@@ -146,12 +139,12 @@ public class LLMManager : MonoBehaviour
         {
             string response = "";
             
-            switch (currentProvider)
+            switch (chat.LLMProvider)
             {
                 case LLMProvider.Gemini:
                     // Using the coroutine-based method through a TaskCompletionSource
                     TaskCompletionSource<string> geminiTcs = new TaskCompletionSource<string>();
-                    StartCoroutine(SendPromptToGeminiCoroutine(prompt, modelType, (result) => geminiTcs.SetResult(result), 
+                    StartCoroutine(SendPromptToGeminiCoroutine(chat, (result) => geminiTcs.SetResult(result), 
                                                               (exception) => geminiTcs.SetException(exception)));
                     response = await Task.Run(() => {
                         // Poll until the task is completed
@@ -166,7 +159,7 @@ public class LLMManager : MonoBehaviour
                 case LLMProvider.LocalLLM:
                     // Using the coroutine-based method through a TaskCompletionSource
                     TaskCompletionSource<string> localTcs = new TaskCompletionSource<string>();
-                    StartCoroutine(SendPromptToLocalLLMCoroutine(prompt, (result) => localTcs.SetResult(result), 
+                    StartCoroutine(SendPromptToLocalLLMCoroutine(chat, (result) => localTcs.SetResult(result), 
                                                                 (exception) => localTcs.SetException(exception)));
                     response = await Task.Run(() => {
                         // Poll until the task is completed
@@ -179,27 +172,27 @@ public class LLMManager : MonoBehaviour
                     break;
             }
             
-            return ParseLLMResponse(response, currentProvider);
+            var parsedResponse = ParseLLMResponse(response, chat);
+            chat.AddEntry(new ChatEntry(isUser: false, parsedResponse));
+            return parsedResponse;
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error sending prompt to {currentProvider}: {e.Message}");
+            Debug.LogError($"Error sending prompt to {chat.LLMProvider}: {e.Message}");
             
             // Implement fallback mechanism
-            if (useLocalLLMFallback && currentProvider == LLMProvider.Gemini && retryCount < maxRetryAttempts)
+            if (useLocalLLMFallback && chat.LLMProvider == LLMProvider.Gemini && retryCount < maxRetryAttempts)
             {
                 Debug.Log("Falling back to Local LLM...");
-                LLMProvider originalProvider = currentProvider;
-                currentProvider = LLMProvider.LocalLLM;
-                string result = await SendPromptToLLM(prompt, modelType, retryCount + 1);
-                currentProvider = originalProvider;
+                chat.ConvertToLocal();
+                string result = await SendPromptToLLM(chat, retryCount + 1);
                 return result;
             }
             else if (retryCount < maxRetryAttempts)
             {
                 Debug.Log($"Retry attempt {retryCount + 1}...");
                 await Task.Delay(1000); // Wait a second before retrying
-                return await SendPromptToLLM(prompt, modelType, retryCount + 1);
+                return await SendPromptToLLM(chat, retryCount + 1);
             }
             
             return "Error: Unable to generate content. Please try again later.";
@@ -209,7 +202,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to Gemini
     /// </summary>
-    private IEnumerator SendPromptToGeminiCoroutine(string prompt, ModelType modelType, Action<string> onSuccess, Action<Exception> onError)
+    private IEnumerator SendPromptToGeminiCoroutine(LLMChat chat, Action<string> onSuccess, Action<Exception> onError)
     {
         if (string.IsNullOrEmpty(geminiApiKey))
         {
@@ -218,21 +211,14 @@ public class LLMManager : MonoBehaviour
         }
         
         // Construct the API URL with API key
-        var model = Array.Find(models, m => m.modelType == modelType);
-        var urlWithModel = string.Format(geminiApiUrl, model.modelName);
-        string apiUrlWithKey = $"{urlWithModel}?key={geminiApiKey}";
+        var model = Array.Find(models, m => m.modelType == chat.ModelType);
+        var urlWithModel = geminiApiUrl + model.modelName;
+        string apiUrlWithKey = $"{urlWithModel}:generateContent?key={geminiApiKey}";
         
         // Create the request payload
         string requestJson = $@"{{
             ""contents"": [
-                {{
-                    ""role"": ""user"",
-                    ""parts"": [
-                        {{
-                            ""text"": ""{EscapeJsonString(prompt)}""
-                        }}
-                    ]
-                }}
+                {chat.GetChatHistoryAsString()}
             ],
             ""generationConfig"": {{
                 ""temperature"": {geminiTemperature},
@@ -243,12 +229,13 @@ public class LLMManager : MonoBehaviour
         }}";
         
         // Create and send the request
-        using (UnityWebRequest request = new UnityWebRequest(apiUrlWithKey, "POST"))
+        using (UnityWebRequest request = UnityWebRequest.Post(apiUrlWithKey, requestJson))
         {
-            byte[] jsonToSend = new UTF8Encoding().GetBytes(requestJson);
+            request.SetRequestHeader("Content-Type", "application/json");
+            var jsonToSend = new UTF8Encoding().GetBytes(requestJson);
             request.uploadHandler = new UploadHandlerRaw(jsonToSend);
             request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
+            Debug.Log("Sending request to Gemini API:\n" + requestJson);
             
             // Send the request
             yield return request.SendWebRequest();
@@ -258,6 +245,11 @@ public class LLMManager : MonoBehaviour
                 onError(new Exception($"API Error: {request.error}"));
                 yield break;
             }
+
+            while (!request.isDone || !request.downloadHandler.isDone)
+            {
+                yield return null;
+            }
             
             onSuccess(request.downloadHandler.text);
         }
@@ -266,23 +258,29 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Coroutine version of sending prompt to local LLM
     /// </summary>
-    private IEnumerator SendPromptToLocalLLMCoroutine(string prompt, Action<string> onSuccess, Action<Exception> onError)
+    private IEnumerator SendPromptToLocalLLMCoroutine(LLMChat chat, Action<string> onSuccess,
+        Action<Exception> onError)
     {
-        // Create the request payload - adjust based on your local LLM API format
+        // Create the request payload in the same format as Gemini
+        var model = Array.Find(localModels, m => m.modelType == chat.ModelType);
         string requestJson = $@"{{
-            ""prompt"": ""{EscapeJsonString(prompt)}"",
+            ""model"": ""{model.modelName}"",
+            ""messages"": [
+                {chat.GetChatHistoryAsString()}
+            ],
             ""temperature"": {localLLMTemperature},
-            ""max_tokens"": {maxOutputTokens}
+            ""stream"": false
         }}";
         
         // Create and send the request
-        using (UnityWebRequest request = new UnityWebRequest(localLLMApiUrl, "POST"))
+        using (UnityWebRequest request = UnityWebRequest.Post(localLLMApiUrl, requestJson))
         {
             byte[] jsonToSend = new UTF8Encoding().GetBytes(requestJson);
             request.uploadHandler = new UploadHandlerRaw(jsonToSend);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            
+            Debug.Log("Sending request to LMStudio API:\n" + requestJson);
+
             // Send the request
             yield return request.SendWebRequest();
             
@@ -290,6 +288,11 @@ public class LLMManager : MonoBehaviour
             {
                 onError(new Exception($"Local LLM Error: {request.error}"));
                 yield break;
+            }
+
+            while (!request.downloadHandler.isDone)
+            {
+                yield return null;
             }
             
             onSuccess(request.downloadHandler.text);
@@ -299,27 +302,43 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Parses the LLM response based on the provider
     /// </summary>
-    private string ParseLLMResponse(string response, LLMProvider provider)
+    private string ParseLLMResponse(string response, LLMChat chat)
     {
         try
         {
-            switch (provider)
+            switch (chat.LLMProvider)
             {
                 case LLMProvider.Gemini:
                     // Parse Gemini response JSON (adjust the parsing based on the actual response structure)
-                    var geminiJson = JsonUtility.FromJson<GeminiResponse>(response);
-                    if (geminiJson != null && geminiJson.candidates != null && geminiJson.candidates.Length > 0)
+                    Debug.Log($"Raw Gemini response:\n{response}");
+                    try
                     {
-                        return geminiJson.candidates[0].content.parts[0].text;
+                        var geminiResponse = JsonUtility.FromJson<GeminiResponse>(response);
+                        StatisticsManager.Instance.Add(chat.ChatName, geminiResponse);
+                        if (geminiResponse != null)
+                        {
+                            return geminiResponse.candidates[0].content.parts[0].text;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        var geminiResponse = JsonUtility.FromJson<GeminiResponseAlternative>(response);
+                        StatisticsManager.Instance.Add(chat.ChatName, geminiResponse);
+                        if (geminiResponse != null)
+                        {
+                            return geminiResponse.candidates[0].parts[0].text;
+                        }
                     }
                     break;
                     
                 case LLMProvider.LocalLLM:
                     // Parse Local LLM response (adjust based on your local LLM API format)
-                    var localJson = JsonUtility.FromJson<LocalLLMResponse>(response);
-                    if (localJson != null)
+                    Debug.Log($"Raw LMStudio response:\n{response}");
+                    var localResponse = JsonUtility.FromJson<LocalLLMResponse>(response);
+                    StatisticsManager.Instance.Add(chat.ChatName, localResponse);
+                    if (localResponse != null)
                     {
-                        return localJson.generated_text;
+                        return localResponse.choices[0].message.content;
                     }
                     break;
             }
@@ -383,35 +402,4 @@ public class ModelData
 {
     public ModelType modelType;
     public string modelName;
-}
-
-// Classes to deserialize LLM responses
-[Serializable]
-public class GeminiResponse
-{
-    public GeminiCandidate[] candidates;
-}
-
-[Serializable]
-public class GeminiCandidate
-{
-    public GeminiContent content;
-}
-
-[Serializable]
-public class GeminiContent
-{
-    public GeminiPart[] parts;
-}
-
-[Serializable]
-public class GeminiPart
-{
-    public string text;
-}
-
-[Serializable]
-public class LocalLLMResponse
-{
-    public string generated_text;
 }

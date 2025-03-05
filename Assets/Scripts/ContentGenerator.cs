@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -111,12 +109,11 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="context">Context about the game world</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Game setting description</returns>
-    public async Task<string> GenerateGameSetting(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    public async Task<string> GenerateGameSetting(LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("GameSetting");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(promptTemplate.templateText, chat);
     }
     
     /// <summary>
@@ -124,7 +121,7 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="fullSetting">The full game setting description</param>
     /// <returns>Summarized setting description</returns>
-    public async Task<string> GenerateSettingSummary(string fullSetting)
+    public async Task<string> GenerateSettingSummary(string fullSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("SettingSummary");
         
@@ -135,11 +132,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        // Use local LLM for summarization
-        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
-        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
-        LLMManager.Instance.SetLLMProvider(originalProvider);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -150,7 +143,7 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomDescription">Full room description</param>
     /// <param name="levelNumber">Current level number</param>
     /// <returns>Image generation prompt</returns>
-    public async Task<string> GenerateRoomImagePrompt(string roomDescription, int levelNumber)
+    public async Task<string> GenerateRoomImagePrompt(string roomDescription, int levelNumber, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("RoomImageGeneration");
         
@@ -162,7 +155,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     #endregion
@@ -175,12 +168,21 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Room description text</returns>
-    public async Task<string> GenerateRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateRoomDescription(int levelNumber, string levelDescription, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("RoomDescription");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "level_number", levelNumber.ToString() },
+            { "level_description", levelDescription },
+            { "level_theme", levelSetting.level_theme },
+            { "level_tone", levelSetting.level_tone }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -189,12 +191,21 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>First room description text</returns>
-    public async Task<string> GenerateFirstRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateFirstRoomDescription(int levelNumber, string levelDescription, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("FirstRoom");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "level_number", levelNumber.ToString() },
+            { "level_description", levelDescription },
+            { "level_theme", levelSetting.level_theme },
+            { "level_tone", levelSetting.level_tone }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -203,12 +214,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room and previous rooms</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Next room description text</returns>
-    public async Task<string> GenerateNextRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateNextRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("NextRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -217,12 +228,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room and previous rooms</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Exit room description text</returns>
-    public async Task<string> GenerateExitRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateExitRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("ExitRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -231,12 +242,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room including previous visit summary</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Revisited room description text</returns>
-    public async Task<string> GenerateRevisitedRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateRevisitedRoomDescription(Dictionary<string, string> roomContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("RevisitedRoom");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, roomContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -244,7 +255,7 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="fullRoomConversation">The full conversation history in the room</param>
     /// <returns>Room summary text</returns>
-    public async Task<string> GenerateRoomSummary(string fullRoomConversation)
+    public async Task<string> GenerateRoomSummary(string fullRoomConversation, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("RoomSummary");
         
@@ -255,11 +266,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        // Use local LLM for summarization
-        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
-        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
-        LLMManager.Instance.SetLLMProvider(originalProvider);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -274,12 +281,21 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="levelContext">Context about the level, including difficulty, horror score, and theme</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Level description text</returns>
-    public async Task<string> GenerateLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateLevelDescription(string settingSummary, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("LevelDescription");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "setting_summary", settingSummary },
+            { "level_theme", levelSetting.level_theme },
+            { "level_tone", levelSetting.level_tone }
+        };
+        
+        //TODO: Add game state to context
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -288,12 +304,20 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="levelContext">Context about the first level</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>First level description text</returns>
-    public async Task<string> GenerateFirstLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateFirstLevelDescription(string settingSummary, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("FirstLevel");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "setting_summary", settingSummary },
+            { "level_theme", levelSetting.level_theme },
+            { "level_tone", levelSetting.level_tone }
+        };
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
+        
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -301,9 +325,9 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="fullLevelDescription">The full level description</param>
     /// <returns>Summarized level description</returns>
-    public async Task<string> GenerateLevelSummary(string fullLevelDescription)
+    public async Task<string> GenerateLevelBrief(string fullLevelDescription, LLMChat chat)
     {
-        var promptTemplate = GetPromptTemplate("LevelSummary");
+        var promptTemplate = GetPromptTemplate("LevelBrief");
         
         Dictionary<string, string> context = new Dictionary<string, string>
         {
@@ -312,11 +336,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        // Use local LLM for summarization
-        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
-        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
-        LLMManager.Instance.SetLLMProvider(originalProvider);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -327,12 +347,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="levelContext">Context about the next level, previous levels, and player profile</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Next level description text</returns>
-    public async Task<string> GenerateNextLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateNextLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("NextLevel");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -340,17 +360,13 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="levelContext">Context including all room summaries and doctor appointment</param>
     /// <returns>Full level summary text</returns>
-    public async Task<string> GenerateFullLevelSummary(Dictionary<string, string> levelContext)
+    public async Task<string> GenerateFullLevelSummary(Dictionary<string, string> levelContext, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("FullLevelSummary");
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, null);
         
-        // Use local LLM for summarization
-        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
-        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
-        LLMManager.Instance.SetLLMProvider(originalProvider);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -365,12 +381,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="doctorContext">Context about the doctor interaction, level number, and room summaries</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Doctor dialogue text</returns>
-    public async Task<string> GenerateDoctorInteraction(Dictionary<string, string> doctorContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateDoctorInteraction(Dictionary<string, string> doctorContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("DoctorOffice");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, doctorContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -378,7 +394,7 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="fullAppointment">The full appointment conversation</param>
     /// <returns>Appointment summary text</returns>
-    public async Task<string> GenerateDoctorAppointmentSummary(string fullAppointment)
+    public async Task<string> GenerateDoctorAppointmentSummary(string fullAppointment, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("AppointmentSummary");
         
@@ -389,11 +405,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        // Use local LLM for summarization
-        LLMProvider originalProvider = LLMManager.Instance.CurrentProvider;
-        LLMManager.Instance.SetLLMProvider(LLMProvider.LocalLLM);
-        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, ModelType.Lite);
-        LLMManager.Instance.SetLLMProvider(originalProvider);
+        var result = await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
         
         return result;
     }
@@ -404,12 +416,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="endgameContext">Context including all level summaries and player profile</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Final confrontation text</returns>
-    public async Task<string> GenerateFinalConfrontation(Dictionary<string, string> endgameContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateFinalConfrontation(Dictionary<string, string> endgameContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("FinalConfrontation");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, endgameContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     #endregion
@@ -422,12 +434,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="context">Context including setting and level summaries, and room description</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Game introduction text</returns>
-    public async Task<string> GenerateGameIntroduction(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    public async Task<string> GenerateGameIntroduction(Dictionary<string, string> context, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("GameIntroduction");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -438,17 +450,16 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="gameContext">Additional game context</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Game response text</returns>
-    public async Task<string> ProcessPlayerInput(string playerInput, string conversationHistory, Dictionary<string, string> gameContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateGameFlowResponse(string playerInput, Dictionary<string, string> gameContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("GameFlow");
         
         Dictionary<string, string> context = new Dictionary<string, string>(gameContext);
         context["player_input"] = playerInput;
-        context["conversation_history"] = conversationHistory;
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -456,12 +467,12 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="profileContext">Context including level summary, appointment log, and previous profile</param>
     /// <returns>Updated player profile text</returns>
-    public async Task<string> GeneratePlayerProfile(Dictionary<string, string> profileContext)
+    public async Task<string> GeneratePlayerProfile(Dictionary<string, string> profileContext, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("PlayerProfile");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, profileContext, null);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -502,12 +513,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="eventContext">Context about the event</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Event description text</returns>
-    public async Task<string> GenerateEventDescription(Dictionary<string, string> eventContext, Dictionary<string, object> gameState)
+    public async Task<string> GenerateEventDescription(Dictionary<string, string> eventContext, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("EventDescription");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, eventContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -517,7 +528,7 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="playerInput">The player's input</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Character dialogue text</returns>
-    public async Task<string> GenerateCharacterDialogue(Dictionary<string, string> characterContext, string playerInput, Dictionary<string, object> gameState)
+    public async Task<string> GenerateCharacterDialogue(Dictionary<string, string> characterContext, string playerInput, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("CharacterDialogue");
         
@@ -527,7 +538,7 @@ public class ContentGenerator : MonoBehaviour
         
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, fullContext, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -536,12 +547,12 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="context">Context about how the game ended</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Game over message</returns>
-    public async Task<string> GenerateGameOverSequence(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    public async Task<string> GenerateGameOverSequence(Dictionary<string, string> context, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("GameOver");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
     
     /// <summary>
@@ -550,11 +561,11 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="context">Context about the player's journey</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Victory message</returns>
-    public async Task<string> GenerateVictorySequence(Dictionary<string, string> context, Dictionary<string, object> gameState)
+    public async Task<string> GenerateVictorySequence(Dictionary<string, string> context, Dictionary<string, object> gameState, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("Victory");
         string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
         
-        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, promptTemplate.modelType);
+        return await LLMManager.Instance.SendPromptToLLM(finalPrompt, chat);
     }
 }

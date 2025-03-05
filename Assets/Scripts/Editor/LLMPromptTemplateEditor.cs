@@ -18,7 +18,7 @@ public class LLMPromptTemplateEditor : Editor
         {
             "GameSetting",
             @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the setting and world description for a deeply unsettling psychological horror game called ""AIHell.""
+Create the setting and world description for a deeply unsettling psychological horror game.
 
 In this game, the player is a patient undergoing experimental psychiatric treatment. The treatment involves navigating through 5 progressively disturbing levels of their own subconscious mind.
 
@@ -26,13 +26,24 @@ Dr. Cassius Mire is overseeing the treatment, but there's something unsettling a
 
 Create an atmospheric, disturbing setting description that:
 1. Establishes the psychological horror premise
-2. Hints at Dr. Mire's true identity without explicitly revealing it
-3. Creates a sense of isolation and disturbance
-4. Outlines that there will be 5 levels, each delving deeper into darker parts of the subconscious
-5. Suggests that the player might encounter manifestations of their fears and weaknesses
+2. Creates a sense of isolation and disturbance
+3. Outlines that there will be 5 levels, each delving deeper into darker parts of the subconscious
+4. Suggests that the player might encounter manifestations of their fears and weaknesses
 
 The setting should be vague enough to allow for personalization through gameplay, but specific enough to establish a cohesive world.
 Keep the description to 3-5 paragraphs, focusing on atmosphere rather than specific details.
+
+Answer in the following format:
+{{
+    ""full_setting"": ""{full_setting}"",
+    ""levels"": [
+        {{ ""level_number"": 1, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
+        {{ ""level_number"": 2, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
+        {{ ""level_number"": 3, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
+        {{ ""level_number"": 4, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }},
+        {{ ""level_number"": 5, ""level_theme"": ""{{level_theme}}"", ""level_tone"": ""{{level_tone}}"" }}
+    ]
+}}
 
 Generate the game setting:"
         },
@@ -56,7 +67,7 @@ Considering the player's psychological profile, which currently indicates:
 
 Describe this room in vivid detail, focusing on sensory details and unsettling atmosphere.
 The description should evoke feelings of {level_emotion}.
-Keep the description concise yet impactful, approximately 3-5 sentences.
+Keep the description concise yet impactful, approximately 5-10 sentences.
 Highlight potentially disturbing or unusual elements within the room.
 
 Generate the room description:"
@@ -68,7 +79,7 @@ Create the first room description for Level {level_number} of a psychological ho
 
 Level Theme: ""{level_theme}""
 Level Tone: ""{level_tone}""
-Level Emotion: ""{level_emotion}""
+Level Description: ""{level_description}""
 
 The player has just entered Level {level_number} and this is the very first room they encounter.
 
@@ -83,7 +94,7 @@ The condition for proceeding should be clear but not immediately obvious - the p
 
 Important: The player MUST solve something or complete some action to leave this room. Make this condition clear in the description.
 
-Keep the description to 4-6 sentences, focusing on sensory details and psychological impact.
+Keep the description to 4-10 sentences, focusing on sensory details and psychological impact.
 
 Generate the first room description:"
         },
@@ -220,24 +231,24 @@ Game Setting Context:
 
 Consider these level parameters:
 - Level Number: 1
-- Difficulty: 3/10 (easier as it's the first level)
-- Horror Rating: 4/10 (unsettling but not extreme)
-- Theme: ""Denial""
-- Tone: ""Disorientation and Confusion""
+- Difficulty: 2/10 (easier as it's the first level)
+- Horror Rating: 2/10 (slightly disturbing)
+- Theme: ""{level_theme}""
+- Tone: ""{level_tone}""
 
 Create a brief, atmospheric description that:
 1. Introduces the first level's setting and psychological atmosphere
 2. Establishes a sense of disorientation appropriate for the beginning of the journey
-3. Hints at the theme of denial and what it might mean for the player
+3. Hints at the theme of of the level and what it might mean for the player
 4. Sets up the initial psychological challenge
 
-Keep the description concise yet evocative, approximately 3-5 sentences.
-The description should be unsettling but not terrifying, as this is just the first level.
+Keep the description concise yet evocative, approximately 5-10 sentences.
+The description should be mildly unsettling, creating a feeling that something in this world is off.
 
 Generate the first level description:"
         },
         {
-            "LevelSummary",
+            "LevelBrief",
             @"Summarize the following level description for a psychological horror game:
 
 {full_level_description}

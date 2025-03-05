@@ -10,7 +10,7 @@ public class GameSession
 {
     // Core game data
     public int CurrentLevel { get; set; } = 1;
-    public string Setting { get; set; }
+    public GameSetting Setting { get; set; }
     public string SettingSummary { get; set; }
     
     // Current level data

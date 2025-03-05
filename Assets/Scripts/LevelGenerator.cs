@@ -15,11 +15,6 @@ public class LevelGenerator : MonoBehaviour
     // Current level index
     private int currentLevelIndex = 0;
     
-    private void Awake()
-    {
-        GenerateAllLevels();
-    }
-    
     public void GenerateAllLevels()
     {
         levels.Clear();
