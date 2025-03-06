@@ -1,4 +1,4 @@
-Shader "UI/Vignette"
+Shader "UI/TVShader"
 {
     Properties
     {
@@ -12,6 +12,21 @@ Shader "UI/Vignette"
         _VignetteSmoothness ("Vignette Smoothness", Range(0.01,3)) = 1.5
         [Toggle] _InnerGlow ("Inner Glow Effect", Float) = 0
         _RectangularityFactor ("Rectangularity", Range(0,5)) = 2.0    // New property to control rectangular shape
+
+        [Header(TV Noise)]
+        [Toggle] _EnableNoise ("Enable Noise Effect", Float) = 1
+        _NoiseIntensity ("Noise Intensity", Range(0,1)) = 0.1
+        _NoiseScale ("Noise Scale", Range(1,100)) = 50
+        _NoiseSpeed ("Noise Speed", Range(0,10)) = 5
+        _ScanlineIntensity ("Scanline Intensity", Range(0,1)) = 0.1
+        _ScanlineCount ("Scanline Count", Range(1,100)) = 50
+        _ScanlineSpeed ("Scanline Speed", Range(0,10)) = 2
+
+        [Header(Pixelization)]
+        [Toggle] _EnablePixelization ("Enable Pixelization", Float) = 1
+        _PixelSize ("Pixel Size", Range(1,100)) = 8
+        [Toggle] _SnapToPixel ("Snap To Pixel Grid", Float) = 1
+        _ColorReduction ("Color Depth Reduction", Range(0,1)) = 0.5
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
     }
@@ -75,6 +90,21 @@ Shader "UI/Vignette"
             float _VignetteSmoothness;
             float _InnerGlow;
             float _RectangularityFactor;
+            
+            // TV Noise properties
+            float _EnableNoise;
+            float _NoiseIntensity;
+            float _NoiseScale;
+            float _NoiseSpeed;
+            float _ScanlineIntensity;
+            float _ScanlineCount;
+            float _ScanlineSpeed;
+            
+            // Pixelization properties
+            float _EnablePixelization;
+            float _PixelSize;
+            float _SnapToPixel;
+            float _ColorReduction;
 
             v2f vert(appdata_t v)
             {
@@ -88,6 +118,77 @@ Shader "UI/Vignette"
 
                 OUT.color = v.color * _Color;
                 return OUT;
+            }
+
+            // Hash function for noise generation
+            float hash(float2 p)
+            {
+                float3 p3 = frac(float3(p.xyx) * 0.13);
+                p3 += dot(p3, p3.yzx + 3.333);
+                return frac((p3.x + p3.y) * p3.z);
+            }
+
+            // Random noise function
+            float noise(float2 uv, float time)
+            {
+                float2 i = floor(uv * _NoiseScale);
+                float2 f = frac(uv * _NoiseScale);
+                
+                // Add time to get movement
+                i += time * _NoiseSpeed;
+                
+                // Four corner hash values
+                float a = hash(i);
+                float b = hash(i + float2(1.0, 0.0));
+                float c = hash(i + float2(0.0, 1.0));
+                float d = hash(i + float2(1.0, 1.0));
+                
+                // Cubic Hermite interpolation
+                f = f * f * (3.0 - 2.0 * f);
+                
+                // Bilinear interpolation for smoother noise
+                return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+            }
+
+            // Scanline effect
+            float scanlines(float2 uv, float time)
+            {
+                float scanline = sin(uv.y * _ScanlineCount + time * _ScanlineSpeed);
+                return (0.5 + 0.5 * scanline) * _ScanlineIntensity;
+            }
+
+            // Apply color depth reduction (fewer colors for retro look)
+            float3 reduceColorDepth(float3 color, float reduction)
+            {
+                if (reduction <= 0) return color;
+                
+                // Calculate number of color steps (lower = fewer colors)
+                float steps = lerp(256, 4, reduction);
+                
+                // Quantize the color
+                return floor(color * steps) / steps;
+            }
+            
+            // Pixelate UV coordinates
+            float2 pixelateUV(float2 uv)
+            {
+                if (_EnablePixelization <= 0.5) return uv;
+                
+                float2 dimensions = float2(
+                    _ScreenParams.x / _PixelSize, 
+                    _ScreenParams.y / _PixelSize
+                );
+                
+                if (_SnapToPixel > 0.5)
+                {
+                    // Snap to pixel grid
+                    return floor(uv * dimensions) / dimensions;
+                }
+                else
+                {
+                    // Just pixelate without snapping
+                    return (floor(uv * dimensions) + 0.5) / dimensions;
+                }
             }
 
             float smoothVignette(float2 uv, float roundness, float smoothness, float intensity, float rectFactor) 
@@ -119,10 +220,34 @@ Shader "UI/Vignette"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
+                // Apply pixelization effect to UV coordinates if enabled
+                float2 pixelUV = pixelateUV(IN.texcoord);
+                
+                // Sample texture with pixelized UVs
+                half4 color = (tex2D(_MainTex, pixelUV) + _TextureSampleAdd) * IN.color;
+
+                // Apply TV noise effect if enabled
+                if (_EnableNoise > 0.5) {
+                    // Generate white noise
+                    float staticNoise = noise(pixelUV, _Time.y);
+                    
+                    // Generate scanlines
+                    float scan = scanlines(pixelUV, _Time.y);
+                    
+                    // Apply noise to the color
+                    color.rgb = lerp(color.rgb, float3(staticNoise, staticNoise, staticNoise), _NoiseIntensity);
+                    
+                    // Apply scanlines - darker where scanlines are present
+                    color.rgb -= float3(scan, scan, scan);
+                }
+                
+                // Apply color depth reduction for retro look
+                if (_EnablePixelization > 0.5) {
+                    color.rgb = reduceColorDepth(color.rgb, _ColorReduction);
+                }
                 
                 // Calculate vignette effect with added rectangularity factor
-                float vignette = smoothVignette(IN.texcoord, _VignetteRoundness, _VignetteSmoothness, 
+                float vignette = smoothVignette(pixelUV, _VignetteRoundness, _VignetteSmoothness, 
                                              _VignetteIntensity, _RectangularityFactor);
                 
                 // Apply vignette

@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace AIHell.UI
 {
@@ -12,12 +13,6 @@ namespace AIHell.UI
 
         void Update()
         {
-            if (EventSystem.current.currentSelectedGameObject != inputField.gameObject)
-            {
-                EventSystem.current.SetSelectedGameObject(inputField.gameObject);
-                inputField.Select();
-            }
-
             if (Input.GetKeyDown(KeyCode.Return))
             {
                 EnterPressed();
@@ -27,6 +22,13 @@ namespace AIHell.UI
             if (Input.mouseScrollDelta != Vector2.zero)
             {
                 scrollView.Scroll(Input.mouseScrollDelta.y);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(scrollView.transform as RectTransform);
+            }
+            
+            if (EventSystem.current.currentSelectedGameObject != inputField.gameObject)
+            {
+                EventSystem.current.SetSelectedGameObject(inputField.gameObject);
+                inputField.Select();
             }
         }
 

@@ -8,6 +8,8 @@ using UnityEngine.Networking;
 public class LLMManager : MonoBehaviour
 {
     [SerializeField] StatisticsManager statisticsManager;
+    [SerializeField] ImageGenerator imageGenerator;
+    
     // API settings
     [Header("Gemini API Settings")]
     [SerializeField]

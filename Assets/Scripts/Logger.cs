@@ -291,8 +291,14 @@ public class Logger : MonoBehaviour
 
     void OnApplicationQuit()
     {
+        if (allLogs.Count == 0 && standardLogs.Count == 0)
+        {
+            Debug.Log("No logs to save.");
+            return;
+        }
+        
         // Log statistics data before quitting
-        if (statisticsManager != null)
+        if (statisticsManager != null && statisticsManager.TotalTokens != 0)
         {
             LogExtra("=== STATISTICS SUMMARY ===");
             var categories = statisticsManager.GetCategories();

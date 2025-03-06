@@ -123,6 +123,52 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &51679899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 51679901}
+  - component: {fileID: 51679900}
+  m_Layer: 0
+  m_Name: ImageLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &51679900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51679899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 922dcc27bb854f67b6b7758d2010b17b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  local: 0
+  localImageDirectoryPath: 
+--- !u!4 &51679901
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51679899}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 963512622}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &155223530
 GameObject:
   m_ObjectHideFlags: 0
@@ -496,7 +542,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 2800000, guid: ed0fe7533744e464a833627ef4967316, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -548,8 +594,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 530.25006, y: -424.07092}
-  m_SizeDelta: {x: -1099.5, y: -887.0719}
+  m_AnchoredPosition: {x: 546.5673, y: -424.07092}
+  m_SizeDelta: {x: -1132.1318, y: -887.0719}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &449307514
 MonoBehaviour:
@@ -803,6 +849,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   statisticsManager: {fileID: 2060667089}
+  imageGenerator: {fileID: 963512621}
   geminiApiKey: AIzaSyAO3eBNDEw4gVi58sDnbDWAX03vTMMzBw8
   geminiApiUrl: https://generativelanguage.googleapis.com/v1beta/models/
   geminiTemperature: 1
@@ -877,8 +924,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 519.21484, y: 102.95535}
-  m_SizeDelta: {x: -1077.362, y: -251.3306}
+  m_AnchoredPosition: {x: 535.97095, y: 102.95535}
+  m_SizeDelta: {x: -1110.8744, y: -251.3306}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &625537273
 MonoBehaviour:
@@ -962,7 +1009,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.0004272461}
+  m_AnchoredPosition: {x: 0, y: -0.00048828125}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &731362722
@@ -1176,6 +1223,62 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &963512620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 963512622}
+  - component: {fileID: 963512621}
+  m_Layer: 0
+  m_Name: ImageGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &963512621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963512620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf5bd71700b8a642b16cbd42824c392, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  comfyUIServerURL: http://127.0.0.1:8188
+  useHighResolution: 0
+  defaultCheckpoint: RealVisXL_V5.0_fp16.safetensors
+  width: 512
+  height: 512
+  steps: 20
+  cfg: 7
+  denoise: 1
+  sampler: euler
+  scheduler: normal
+  defaultNegativePrompt: bad hands, blurry, distorted, disfigured, poor quality
+--- !u!4 &963512622
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963512620}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 51679901}
+  m_Father: {fileID: 1653742606}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &977333748
 GameObject:
   m_ObjectHideFlags: 0
@@ -2060,7 +2163,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1653742605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2108,6 +2211,7 @@ Transform:
   - {fileID: 2060667090}
   - {fileID: 535750025}
   - {fileID: 1969579970}
+  - {fileID: 963512622}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3650,6 +3754,9 @@ MonoBehaviour:
       the image generation prompt in a format optimal for image AI (without mentioning
       AI):'
     modelType: 1
+  generateImagesForRooms: 1
+  defaultImageNegativePrompt: bad hands, blurry, distorted, disfigured, poor quality
+  imagePromptPrefix: 'a cinematic shot of a horror game scene: '
 --- !u!4 &1969579970
 Transform:
   m_ObjectHideFlags: 0
