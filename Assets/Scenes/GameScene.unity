@@ -123,52 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &51679899
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 51679901}
-  - component: {fileID: 51679900}
-  m_Layer: 0
-  m_Name: ImageLoader
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &51679900
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 51679899}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 922dcc27bb854f67b6b7758d2010b17b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  local: 0
-  localImageDirectoryPath: 
---- !u!4 &51679901
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 51679899}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 963512622}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &155223530
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,9 +224,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7c5418eebdb44fab239f20dd90eb815, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasGroup: {fileID: 242621179}
   inputField: {fileID: 449307516}
+  inputFieldCanvasGroup: {fileID: 449307517}
   scrollView: {fileID: 625537273}
   chatText: {fileID: 977333751}
+  chatCanvasGroup: {fileID: 625537275}
+  image: {fileID: 408590057}
+  imageCanvasGroup: {fileID: 408590059}
+  fadeinDuration: 2
+  fadeoutDuration: 3
+  typingSpeed: 20
+  tvNoiseMax: 1
+  tvNoiseMin: 0.1
+  tvNoiseAdjustmentDuration: 2
 --- !u!1 &302218091
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,17 +339,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 329774226}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 783601428}
-  m_RootOrder: 1
+  m_Father: {fileID: 1523839460}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00000095367, y: -35.90299}
+  m_AnchoredPosition: {x: -14.999999, y: -46.805973}
   m_SizeDelta: {x: 212.582, y: 71.806}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &329774228
@@ -409,8 +374,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: (99%)
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_sharedMaterial: {fileID: -5797852710417614685, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -495,6 +460,7 @@ GameObject:
   - component: {fileID: 408590056}
   - component: {fileID: 408590058}
   - component: {fileID: 408590057}
+  - component: {fileID: 408590059}
   m_Layer: 5
   m_Name: RawImage
   m_TagString: Untagged
@@ -557,6 +523,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 408590055}
   m_CullTransparentMesh: 1
+--- !u!225 &408590059
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 408590055}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &449307511
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,6 +547,7 @@ GameObject:
   - component: {fileID: 449307515}
   - component: {fileID: 449307514}
   - component: {fileID: 449307516}
+  - component: {fileID: 449307517}
   m_Layer: 5
   m_Name: InputField
   m_TagString: Untagged
@@ -687,12 +666,12 @@ MonoBehaviour:
   m_InputType: 0
   m_AsteriskChar: 42
   m_KeyboardType: 0
-  m_LineType: 0
+  m_LineType: 2
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
   m_RegexValue: 
-  m_GlobalPointSize: 31
+  m_GlobalPointSize: 21
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
@@ -726,15 +705,27 @@ MonoBehaviour:
   m_CaretWidth: 15
   m_ReadOnly: 0
   m_RichText: 1
-  m_GlobalFontAsset: {fileID: 0}
+  m_GlobalFontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
   m_OnFocusSelectAll: 0
   m_ResetOnDeActivation: 1
   m_RestoreOriginalTextOnEscape: 0
   m_isRichTextEditingAllowed: 0
-  m_LineLimit: 0
+  m_LineLimit: 20
   m_InputValidator: {fileID: 0}
   overridenCaretWidth: 15
   highlightedTextColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!225 &449307517
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449307511}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -897,6 +888,7 @@ GameObject:
   - component: {fileID: 625537272}
   - component: {fileID: 625537274}
   - component: {fileID: 625537273}
+  - component: {fileID: 625537275}
   m_Layer: 5
   m_Name: ScrollView
   m_TagString: Untagged
@@ -973,6 +965,18 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!225 &625537275
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625537271}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &731362720
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,7 +1035,7 @@ MonoBehaviour:
     m_Bottom: 0
   m_ChildAlignment: 0
   m_Spacing: 0
-  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
@@ -1063,6 +1067,7 @@ GameObject:
   - component: {fileID: 783601428}
   - component: {fileID: 783601430}
   - component: {fileID: 783601429}
+  - component: {fileID: 783601431}
   m_Layer: 5
   m_Name: LoadingScreen
   m_TagString: Untagged
@@ -1082,8 +1087,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 814757458}
   - {fileID: 1523839460}
-  - {fileID: 329774227}
   m_Father: {fileID: 831124198}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1105,8 +1110,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 783601430}
+  settingTextGameObject: {fileID: 814757457}
+  gradientGameObject: {fileID: 790610585}
+  settingText: {fileID: 2128808455}
   loadingText: {fileID: 1523839461}
   progressText: {fileID: 329774228}
+  settingTextRectTransform: {fileID: 2128808453}
+  scrollingSpeed: 10
 --- !u!225 &783601430
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1119,6 +1129,200 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &783601431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 783601427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: -17
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_Spacing: -207.98
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!1 &790610585
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 790610586}
+  - component: {fileID: 790610588}
+  - component: {fileID: 790610587}
+  m_Layer: 5
+  m_Name: Gradient
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &790610586
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 790610585}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 814757458}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
+  m_Pivot: {x: 0.5, y: 0}
+--- !u!114 &790610587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 790610585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: a1ca6194fce3c9a4f91754d4ecb88643, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &790610588
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 790610585}
+  m_CullTransparentMesh: 1
+--- !u!1 &814757457
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 814757458}
+  - component: {fileID: 814757461}
+  - component: {fileID: 814757460}
+  - component: {fileID: 814757459}
+  m_Layer: 5
+  m_Name: Setting
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &814757458
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 814757457}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2128808453}
+  - {fileID: 790610586}
+  m_Father: {fileID: 783601428}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1000, y: 755.6155}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &814757459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 814757457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &814757460
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 814757457}
+  m_CullTransparentMesh: 1
+--- !u!114 &814757461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 814757457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShowMaskGraphic: 0
 --- !u!1 &831124194
 GameObject:
   m_ObjectHideFlags: 0
@@ -1274,8 +1478,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 51679901}
+  m_Children: []
   m_Father: {fileID: 1653742606}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1316,7 +1519,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 840.7, y: 0}
+  m_SizeDelta: {x: 800, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &977333750
 MonoBehaviour:
@@ -1354,8 +1557,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_sharedMaterial: {fileID: -5797852710417614685, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1379,8 +1582,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1594,7 +1797,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 30}
+  m_SizeDelta: {x: 0, y: 109.4836}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &1168503926
 GameObject:
@@ -1673,9 +1876,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1287727927}
-  - component: {fileID: 1287727930}
-  - component: {fileID: 1287727929}
   - component: {fileID: 1287727928}
+  - component: {fileID: 1287727929}
   m_Layer: 5
   m_Name: LevelVisualizer
   m_TagString: Untagged
@@ -1725,44 +1927,18 @@ MonoBehaviour:
   playerMarkerPrefab: {fileID: 4151192197850120465, guid: adc500d9ce8ec1344b5d436dc733ddd2, type: 3}
   currentRoomHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 0}
   roomSpacing: 40
---- !u!114 &1287727929
-MonoBehaviour:
+--- !u!225 &1287727929
+CanvasGroup:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1287727926}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!223 &1287727930
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287727926}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1338224368
 GameObject:
   m_ObjectHideFlags: 0
@@ -1913,13 +2089,14 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 329774227}
   m_Father: {fileID: 783601428}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 15, y: 10.903}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 212.582, y: 71.806}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1523839461
@@ -1944,8 +2121,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Loading...
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_sharedMaterial: {fileID: -5797852710417614685, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2181,7 +2358,10 @@ MonoBehaviour:
   levelVisualizer: {fileID: 1287727928}
   llmManager: {fileID: 535750024}
   contentGenerator: {fileID: 1969579969}
-  useDefaultData: 0
+  imageGenerator: {fileID: 963512621}
+  mainUI: {fileID: 242621180}
+  loadingScreen: {fileID: 783601429}
+  useDefaultData: 1
   defaultLevelThemes:
   - Anxiety
   - Isolation, paranoia
@@ -2474,8 +2654,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u200B"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_sharedMaterial: {fileID: -5797852710417614685, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2499,8 +2679,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 31
-  m_fontSizeBase: 31
+  m_fontSize: 21
+  m_fontSizeBase: 21
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2515,7 +2695,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 0
+  m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 4
   m_linkedTextComponent: {fileID: 0}
@@ -2591,7 +2771,7 @@ MonoBehaviour:
       is in hell but doesn''t know it yet. They travel through a series of levels,
       each with its own theme and tone.
 
-      These level are an illusion created
+      These levels are an illusion created
       by Dr. Cassius Mire, a psychiatrist who is actually Lucifer in disguise.
 
       The
@@ -2601,37 +2781,41 @@ MonoBehaviour:
       creative with the overall setting, it can be anything from an industrial complex
       to a space station.
 
+      
 
+      The setting should be vague enough to
+      allow for personalization through gameplay, but specific enough to establish
+      a cohesive world.
 
-      The setting should be vague enough to allow for
-      personalization through gameplay, but specific enough to establish a cohesive
-      world.
+      Keep the description to 3-5 paragraphs. The player
+      won''t see this description, so it can be more technical and specific.
 
-      Keep the description to 3-5 paragraphs, focusing on atmosphere
-      rather than specific details.
+      
 
+      Each
+      consecutive level will be progressively more disturbing and psychologically
+      challenging.
 
+      Reply with just the text of the setting description.
 
-      Each consecutive level will be progressively
-      more disturbing and psychologically challenging.
+      
 
-
-
-      The game setting:'
+      The
+      game setting:'
     modelType: 1
   - templateName: SettingSummary
     templateText: 'Summarize the following game setting description for use as brief
       context in other prompts:
 
-
+      
 
       {full_setting}
 
+      
 
-
-      Create a concise
-      summary (maximum 4 sentences) that captures the essential elements of the setting
-      while maintaining the ominous tone.'
+      Create
+      a concise summary (maximum 4 sentences) that captures the essential elements
+      of the setting while maintaining the ominous tone.'
     modelType: 1
   - templateName: RoomDescription
     templateText: 'You are a text adventure game narrative generator specializing
@@ -2643,20 +2827,20 @@ MonoBehaviour:
       The overall tone of this level
       is "{level_tone}".
 
-
+      
 
       Here is the level description:
 
       {level_description_brief}
 
-
+      
 
       Here
       is what happened in the rooms before:
 
       {previous_rooms_summary}
 
-
+      
 
       Considering
       the player''s psychological profile, which currently indicates:
@@ -2666,7 +2850,7 @@ MonoBehaviour:
 
       - Curiosity Level: {player_curiosity_level}
 
-
+      
 
       Describe
       this room in detail, focusing on contents and events happening in the room.
@@ -2678,16 +2862,17 @@ MonoBehaviour:
       potentially disturbing or unusual elements within the room. The player may
       meet new or previously met characters here.
 
+      
 
+      Important: The
+      player MUST solve something or complete some action to leave this room. Make
+      this condition clear in the description.
 
-      Important: The player
-      MUST solve something or complete some action to leave this room. Make this
-      condition clear in the description.
+      The player won''t see this
+      description, so it can be more technical and specific. Get creative with room''s
+      content and goals.
 
-      The player won''t see this description,
-      so it can be more technical and specific.
-
-
+      
 
       Generate the room description:'
     modelType: 1
@@ -2698,46 +2883,47 @@ MonoBehaviour:
       Create the first room description for Level
       {level_number} of a psychological horror game.
 
+      
 
+      Level Theme:
+      "{level_theme}"
 
-      Level Theme: "{level_theme}"
+      Level Tone: "{level_tone}"
 
-      Level
-      Tone: "{level_tone}"
+      Level Description:
+      "{level_description}"
 
-      Level Description: "{level_description}"
+      
 
+      The player has just entered Level {level_number}
+      and this is the very first room they encounter.
 
+      
+
+      Create a detailed
+      room description that:
+
+      1. Sets the tone for the entire level
+
+      2.
+      Introduces elements that reflect the level theme
+
+      3. Contains subtle
+      psychological horror elements
+
+      4. Includes a specific condition or puzzle
+      that must be solved to proceed further
+
+      
+
+      The room should establish
+      the atmosphere while suggesting that darker elements await deeper in the level.
 
       The
-      player has just entered Level {level_number} and this is the very first room
-      they encounter.
+      condition for proceeding should be clear but not immediately obvious - the
+      player should need to interact with the environment.
 
-
-
-      Create a detailed room description that:
-
-      1.
-      Sets the tone for the entire level
-
-      2. Introduces elements that reflect
-      the level theme
-
-      3. Contains subtle psychological horror elements
-
-      4.
-      Includes a specific condition or puzzle that must be solved to proceed further
-
-
-
-      The
-      room should establish the atmosphere while suggesting that darker elements
-      await deeper in the level.
-
-      The condition for proceeding should be clear
-      but not immediately obvious - the player should need to interact with the environment.
-
-
+      
 
       Important:
       The player MUST solve something or complete some action to leave this room.
@@ -2746,13 +2932,13 @@ MonoBehaviour:
       The player won''t see
       this description, so it can be more technical and specific.
 
+      
 
+      Keep
+      the description to 4-10 sentences, focusing on contents and events happening
+      in the room.
 
-      Keep the
-      description to 4-10 sentences, focusing on contents and events happening in
-      the room.
-
-
+      
 
       Generate the first room description:'
     modelType: 1
@@ -2763,75 +2949,76 @@ MonoBehaviour:
       Create the next room description for Level
       {level_number} of a psychological horror game.
 
+      
 
+      Level Theme:
+      "{level_theme}"
 
-      Level Theme: "{level_theme}"
+      Level Tone: "{level_tone}"
 
-      Level
-      Tone: "{level_tone}"
+      Room Archetype:
+      "{room_archetype}"
 
-      Room Archetype: "{room_archetype}"
+      
 
-
-
-      Previous
-      rooms in this level:
+      Previous rooms in this level:
 
       {previous_rooms_summary}
 
+      
 
+      The
+      player''s psychological profile currently indicates:
 
-      The player''s
-      psychological profile currently indicates:
+      - Fear Level:
+      {player_fear_level}
 
-      - Fear Level: {player_fear_level}
+      - Paranoia Level: {player_paranoia_level}
 
       -
-      Paranoia Level: {player_paranoia_level}
+      Aggression Level: {player_aggression_level}
 
-      - Aggression Level: {player_aggression_level}
+      
 
+      Create a detailed
+      room description that:
 
-
-      Create
-      a detailed room description that:
-
-      1. Builds upon the established atmosphere
-      of the level
+      1. Builds upon the established atmosphere of
+      the level
 
       2. Contains new disturbing elements that escalate the psychological
       tension
 
-      3. Optionally includes characters or events that challenge the
-      player
+      3. Optionally includes characters or events that challenge
+      the player
 
-      4. Includes a condition that must be fulfilled to proceed further
+      4. Includes a condition that must be fulfilled to proceed
+      further
 
+      
 
+      The condition for proceeding should relate to the
+      room''s contents and possibly to the player''s psychological profile.
 
-      The
-      condition for proceeding should relate to the room''s contents and possibly
-      to the player''s psychological profile.
+      If
+      this is room {room_number} out of {total_rooms} in the level, adjust the intensity
+      accordingly.
 
-      If this is room {room_number}
-      out of {total_rooms} in the level, adjust the intensity accordingly.
+      
 
+      Important: The player MUST complete some action
+      or solve something to leave this room. End with "ROOM CLEAR" when they''ve
+      completed the condition, or "PLAYER DEAD" if their actions lead to death.
 
+      
 
-      Important:
-      The player MUST complete some action or solve something to leave this room.
-      End with "ROOM CLEAR" when they''ve completed the condition, or "PLAYER DEAD"
-      if their actions lead to death.
+      Keep
+      the description to 4-6 sentences, focusing on sensory details and psychological
+      impact.
 
+      
 
-
-      Keep the description to 4-6 sentences,
-      focusing on sensory details and psychological impact.
-
-
-
-      Generate the
-      next room description:'
+      Generate the next room description:'
     modelType: 1
   - templateName: ExitRoom
     templateText: 'You are a text adventure game narrative generator specializing
@@ -2840,67 +3027,69 @@ MonoBehaviour:
       Create the exit room description for Level
       {level_number} of a psychological horror game.
 
+      
 
+      Level Theme:
+      "{level_theme}"
 
-      Level Theme: "{level_theme}"
+      Level Tone: "{level_tone}"
 
-      Level
-      Tone: "{level_tone}"
+      
 
-
-
-      Previous rooms in this level:
+      Previous
+      rooms in this level:
 
       {previous_rooms_summary}
 
-
+      
 
       The
       player''s psychological profile currently indicates:
 
-      - Fear Level: {player_fear_level}
+      - Fear Level:
+      {player_fear_level}
+
+      - Paranoia Level: {player_paranoia_level}
 
       -
-      Paranoia Level: {player_paranoia_level}
+      Aggression Level: {player_aggression_level}
 
-      - Aggression Level: {player_aggression_level}
+      
 
+      Create a detailed
+      description for the exit room that:
 
+      1. Serves as a climax to the themes
+      explored in this level
 
-      Create
-      a detailed description for the exit room that:
+      2. Contains disturbing elements that represent
+      a culmination of the level''s horror
 
-      1. Serves as a climax
-      to the themes explored in this level
+      3. Features Dr. Cassius Mire''s
+      office door prominently in the room
 
-      2. Contains disturbing elements
-      that represent a culmination of the level''s horror
+      4. Includes a final challenge or
+      revelation before the player can exit
 
-      3. Features Dr.
-      Cassius Mire''s office door prominently in the room
+      
 
-      4. Includes a final
-      challenge or revelation before the player can exit
-
-
-
-      IMPORTANT: The
-      room MUST contain Dr. Cassius Mire''s office door as the way to exit this level.
+      IMPORTANT: The room
+      MUST contain Dr. Cassius Mire''s office door as the way to exit this level.
 
       The
       door should be described in an unsettling way that hints at Dr. Mire''s true
       nature (Lucifer in disguise).
 
+      
 
+      Keep the description to 4-6
+      sentences, focusing on sensory details and psychological impact.
 
-      Keep the description to 4-6 sentences,
-      focusing on sensory details and psychological impact.
+      End
+      with "ROOM CLEAR" when they''ve completed the condition, or "PLAYER DEAD" if
+      their actions lead to death.
 
-      End with "ROOM
-      CLEAR" when they''ve completed the condition, or "PLAYER DEAD" if their actions
-      lead to death.
-
-
+      
 
       Generate the exit room description:'
     modelType: 1
@@ -2911,20 +3100,21 @@ MonoBehaviour:
       The player is revisiting a room they''ve already
       explored in Level {level_number}.
 
+      
 
-
-      Original room description summary:
+      Original room description
+      summary:
 
       "{room_summary}"
 
+      
 
-
-      What
-      happened during their previous visit:
+      What happened during their
+      previous visit:
 
       "{previous_visit_summary}"
 
-
+      
 
       Create
       a brief description of the revisited room that:
@@ -2935,12 +3125,12 @@ MonoBehaviour:
       2. Notes any changes that might have
       occurred since their last visit
 
-      3. Indicates that there is nothing new
-      to discover here
+      3. Indicates that there is nothing
+      new to discover here
 
       4. Suggests they should choose another direction
 
-
+      
 
       The
       description should be brief (2-3 sentences) but maintain the psychological
@@ -2949,141 +3139,128 @@ MonoBehaviour:
       The player cannot do anything meaningful in this
       room now - they must leave.
 
+      
 
+      End the description with "ROOM
+      CLEAR" to indicate they should move on.
 
-      End the description with "ROOM CLEAR"
-      to indicate they should move on.
+      
 
-
-
-      Generate the revisited room description:'
+      Generate the revisited
+      room description:'
     modelType: 1
   - templateName: RoomSummary
-    templateText: 'Summarize the following conversation that took place in a room
+    templateText: 'Summarize the following interaction that took place in a room
       in the psychological horror game:
 
-
+      
 
       {full_room_conversation}
 
-
+      
 
       Create
-      a concise summary (2-3 sentences) that captures:
+      a concise summary (3-4 sentences) that captures:
 
-      1. The key features
-      of the room
+      1. The key events
+      that happened
 
       2. Important actions the player took
 
       3. Any significant
-      events or revelations that occurred
+      acquaintances or revelations that occurred
 
+      
 
-
-      The summary will be used for context
-      in future game prompts, so include essential psychological elements.'
+      The summary will
+      be used for context in future game prompts, so include essential psychological
+      elements.'
     modelType: 1
   - templateName: LevelDescription
     templateText: 'You are a text adventure game narrative generator specializing
       in psychological horror.
 
-      Create a description for Level {level_number}
+      Create a description for Act {level_number}
       of a psychological horror game about submerging deeper and deeper into the
-      player''s subconsciousness. Come up with a vague narrative for this level and
+      player''s subconsciousness. Come up with a vague narrative for this act and
       outline the main events that will occur.
 
+      
 
+      - Theme of the act
+      should be "{level_theme}"
 
-      Consider these level parameters:
+      - Tone of the act is "{level_tone}"
 
-      -
-      Difficulty: {difficulty_level}/10 (higher means more challenging gameplay)
+      
 
-      -
-      Horror Rating: {horror_score}/10 (higher means more disturbing content)
-
-      -
-      Theme: "{level_theme}"
-
-      - Tone: "{level_tone}"
-
-
-
-      The player has
-      just completed Level {previous_level_number} which was themed "{previous_level_theme}".
+      The
+      player has just completed act {previous_level_number} which was themed "{previous_level_theme}".
 
       The
       overall setting of the game is "{setting_summary}".
 
+      
 
+      Create
+      a brief, atmospheric description that:
 
-      Create a brief,
-      atmospheric description that:
+      1. Introduces the act''s setting
+      and psychological atmosphere
 
-      1. Introduces the level''s setting and
-      psychological atmosphere
+      2. Hints at what horrors might await the
+      player
 
-      2. Hints at what horrors might await the player
+      3. Establishes the overall mood appropriate to the difficulty
+      and horror rating
 
-      3.
-      Establishes the overall mood appropriate to the difficulty and horror rating
+      4. Provides subtle clues about what the player might
+      encounter
 
-      4.
-      Provides subtle clues about what the player might encounter
+      
 
+      Keep the description concise yet evocative, approximately
+      5-10 sentences.
 
+      As the difficulty and the act number increase, the
+      descriptions should become progressively more unsettling and foreboding.
 
-      Keep the
-      description concise yet evocative, approximately 5-10 sentences.
+      Reply
+      with just the requested text of the act description.
 
-      As
-      the difficulty and horror score increase, the descriptions should become progressively
-      more unsettling and foreboding.
+      
 
-
-
-      Generate the level description:'
+      Act description:'
     modelType: 1
   - templateName: FirstLevel
     templateText: 'You are a text adventure game narrative generator specializing
       in psychological horror.
 
-      Create the first level description for a psychological
+      Create the first act description for a psychological
       horror game about submerging deeper and deeper into the player''s subconsciousness.
-      Come up with a vague narrative for this level and outline the main events that
+      Come up with a vague narrative for this act and outline the main events that
       will occur.
 
+      
 
-
-      Game Setting Context:
+      Game Setting:
 
       {setting_summary}
 
-
-
-      Consider
-      these level parameters:
-
-      - Level Number: 1
-
-      - Difficulty: 2/10
-      (easier as it''s the first level)
-
-      - Horror Rating: 2/10 (slightly disturbing)
+      
 
       -
-      Theme: "{level_theme}"
+      Theme of the act is "{level_theme}"
 
-      - Tone: "{level_tone}"
+      - Tone of the act is "{level_tone}"
 
+      
 
+      Create
+      a brief, atmospheric description that:
 
-      Create a brief,
-      atmospheric description that:
-
-      1. Introduces the first level''s setting
-      and psychological atmosphere
+      1. Introduces the first act''s
+      setting and psychological atmosphere
 
       2. Establishes a sense of disorientation
       appropriate for the beginning of the journey
@@ -3091,21 +3268,24 @@ MonoBehaviour:
       3. Hints at what horrors
       might await the player
 
-      4. Establishes the overall mood appropriate to
-      the difficulty and horror rating
+      4. Establishes the overall mood appropriate
+      to the difficulty and horror rating
 
-      5. Provides subtle clues about what
-      the player might encounter
+      5. Provides subtle clues about
+      what the player might encounter
 
+      
 
+      Keep the description concise
+      yet evocative, approximately 5-10 sentences.
 
-      Keep the description concise yet evocative,
-      approximately 5-10 sentences.
+      The description should
+      be mildly unsettling, creating a feeling that something in this world is off.
 
-      The description should be mildly unsettling,
-      creating a feeling that something in this world is off.
+      Reply
+      with just the text of the act description.
 
-
+      
 
       Level description:'
     modelType: 1
@@ -3113,22 +3293,22 @@ MonoBehaviour:
     templateText: 'Summarize the following level description for a psychological
       horror game:
 
-
+      
 
       {full_level_description}
 
+      
 
-
-      Create a concise summary
-      (2-3 sentences) that captures the essential theme, tone, and psychological
-      elements of the level while maintaining the ominous atmosphere.'
+      Create
+      a concise summary (2-3 sentences) that captures the essential theme, tone,
+      and psychological elements of the level while maintaining the ominous atmosphere.'
     modelType: 1
   - templateName: NextLevel
     templateText: 'Here is what happened in the previous level:
 
       {previous_level_summary}
 
-
+      
 
       At
       the end of the level the player was confronted by Dr. Cassius Mire, who is
@@ -3138,146 +3318,150 @@ MonoBehaviour:
 
       {previous_appointment_summary}
 
-
+      
 
       Player''s
       Psychological Profile:
 
       {player_profile}
 
+      
 
-
-      Consider these level
-      parameters:
+      Consider these
+      level parameters:
 
       - Level Number: {level_number}
 
-      - Difficulty: {difficulty_level}/10
-      (increases with each level)
+      - Difficulty:
+      {difficulty_level}/10 (increases with each level)
 
-      - Horror Rating: {horror_score}/10 (increases
-      with each level)
+      - Horror Rating:
+      {horror_score}/10 (increases with each level)
 
       - Theme: "{level_theme}"
 
-      - Tone: "{level_tone}"
+      -
+      Tone: "{level_tone}"
 
+      
 
+      Create a brief, atmospheric description
+      of the next level that:
 
-      Create
-      a brief, atmospheric description of the next level that:
+      1. Introduces new level''s setting and psychological
+      atmosphere
 
-      1. Introduces
-      new level''s setting and psychological atmosphere
+      2. Builds upon the psychological journey established in
+      previous levels
 
-      2. Builds upon the
-      psychological journey established in previous levels
+      3. Incorporates elements from the player''s psychological
+      profile, especially their fears and weaknesses
 
-      3. Incorporates
-      elements from the player''s psychological profile, especially their fears and
-      weaknesses
+      4. Establishes a more
+      intense challenge appropriate to the increased difficulty
 
-      4. Establishes a more intense challenge appropriate to the
-      increased difficulty
+      
 
+      The
+      level should exploit the weaknesses and fears identified in the player''s profile.
 
+      As
+      this is level {level_number}, the description should be progressively more
+      disturbing than previous levels.
 
-      The level should exploit the weaknesses and fears
-      identified in the player''s profile.
+      
 
-      As this is level {level_number},
-      the description should be progressively more disturbing than previous levels.
+      Keep the description concise
+      yet evocative, approximately 5-10 sentences.
 
+      Reply with just the text
+      of the level description.
 
+      
 
-      Keep
-      the description concise yet evocative, approximately 5-10 sentences.
-
-
-
-      Next
-      level description:'
+      Next level description:'
     modelType: 1
   - templateName: FullLevelSummary
     templateText: 'Create a comprehensive summary of the player''s experience in
       Level {level_number}.
 
-
+      
 
       Room Summaries:
 
       {room_summaries}
 
-
+      
 
       Doctor''s
       Appointment Summary:
 
       {appointment_summary}
 
+      
 
+      Create
+      a concise but complete summary (10-30 sentences) that captures:
 
-      Create a concise
-      but complete summary (10-30 sentences) that captures:
+      1.
+      The key psychological themes explored in this level
 
-      1. The key psychological
-      themes explored in this level
+      2. Important choices
+      or actions the player made
 
-      2. Important choices or actions the player
-      made
+      3. Significant revelations or character
+      encounters
 
-      3. Significant revelations or character encounters
+      4. How the doctor''s appointment concluded the level
 
-      4. How
-      the doctor''s appointment concluded the level
+      
 
-
-
-      This summary will be
-      used to inform future game content, so highlight elements that reflect the
-      player''s psychological state and potential weaknesses.'
+      This
+      summary will be used to inform future game content, so highlight elements that
+      reflect the player''s psychological state and potential weaknesses.'
     modelType: 1
   - templateName: DoctorOffice
     templateText: 'You are a text adventure game narrative generator specializing
       in psychological horror.
 
-      Create a doctor''s office interaction for a
-      psychological horror game.
+      Create a doctor''s office interaction for
+      a psychological horror game.
 
+      
 
+      The player has just completed
+      Level {level_number}.
 
-      The player has just completed Level {level_number}.
+      
 
-
+      Level Theme: "{level_theme}"
 
       Level
-      Theme: "{level_theme}"
+      Tone: "{level_tone}"
 
-      Level Tone: "{level_tone}"
+      
 
-
-
-      Room Summaries
-      from this level:
+      Room Summaries from this level:
 
       {room_summaries}
 
+      
 
-
-      Player''s Psychological Profile:
+      Player''s
+      Psychological Profile:
 
       {player_profile}
 
+      
 
-
-      The
-      player is now in Dr. Cassius Mire''s office for their appointment after completing
+      The player
+      is now in Dr. Cassius Mire''s office for their appointment after completing
       the level.
 
       Dr. Mire is actually Lucifer in disguise, manipulating the
       player''s journey through their personal hell.
 
-
+      
 
       Important context:
 
@@ -3288,15 +3472,15 @@ MonoBehaviour:
       For Level 3-4 appointments: Dr. Mire becomes progressively more aggressive
       and targets player weaknesses
 
+      
 
+      Create a doctor''s office scene
+      where:
 
-      Create a doctor''s office scene where:
+      1. Dr. Mire analyzes the player''s actions during the level
 
-      1.
-      Dr. Mire analyzes the player''s actions during the level
-
-      2. He probes
-      into the player''s fears and insecurities based on their choices
+      2.
+      He probes into the player''s fears and insecurities based on their choices
 
       3.
       The conversation becomes more unsettling as it progresses
@@ -3304,7 +3488,7 @@ MonoBehaviour:
       4. The level
       of hostility matches the current level number (higher = more aggressive)
 
-
+      
 
       The
       session should end with Dr. Mire dismissing the patient to the next level.
@@ -3313,35 +3497,36 @@ MonoBehaviour:
       the dialogue realistic, psychologically unsettling, and reflective of the level
       theme.
 
+      
 
-
-      Generate the doctor''s office interaction:'
+      Generate the first message of the doctor''s office
+      interaction:'
     modelType: 1
   - templateName: AppointmentSummary
-    templateText: 'Summarize the following doctor''s appointment from the psychological
-      horror game:
+    templateText: 'Summarize the following interaction from the psychological horror
+      game:
 
-
+      
 
       {full_appointment}
 
+      
 
+      Create a concise
+      summary (3-5 sentences) that captures:
 
-      Create a concise summary
-      (3-5 sentences) that captures:
+      1. Dr. Mire''s assessment and
+      attitude toward the player
 
-      1. Dr. Mire''s assessment and attitude
-      toward the player
+      2. Key psychological insights revealed about
+      the player
 
-      2. Key psychological insights revealed about the player
+      3. Any significant warnings or ominous statements made
 
-      3.
-      Any significant warnings or ominous statements made
+      
 
-
-
-      The summary should
-      extract the most important psychological elements.'
+      The
+      summary should extract the most important psychological elements.'
     modelType: 1
   - templateName: GameIntroduction
     templateText: 'You are a text adventure game narrative generator specializing
@@ -3350,26 +3535,26 @@ MonoBehaviour:
       Create the opening introduction for a psychological
       horror game.
 
-
+      
 
       Game Setting:
 
       {setting_summary}
 
-
+      
 
       First
       Level:
 
       {level_summary}
 
-
+      
 
       First Room:
 
       {room_description}
 
-
+      
 
       Create
       an engaging introduction that:
@@ -3377,74 +3562,81 @@ MonoBehaviour:
       1. Welcomes the player to the psychological
       horror experience
 
-      2. Establishes the premise that they are a patient
-      undergoing experimental treatment
+      2. Transitions smoothly into the description of the
+      first room
 
-      3. Briefly introduces Dr. Cassius
-      Mire as their supervising psychiatrist (without revealing his true identity)
+      3. Provides subtle hints about how to interact with the
+      game world
 
-      4.
-      Transitions smoothly into the description of the first room
+      
 
-      5. Provides
-      subtle hints about how to interact with the game world
+      The introduction should be atmospheric, building
+      tension while clearly establishing the game''s premise.
 
+      End with the
+      room description and a hint that the player needs to do something in order
+      to proceed further.
 
+      
 
-      The introduction
-      should be atmospheric, building tension while clearly establishing the game''s
-      premise.
+      The player will reply with actions they
+      want to take.
 
-      End with the room description and a prompt for the player to
-      take their first action.
+      When the player has completed the condition to leave
+      the room, end with "ROOM CLEAR" on a new line.
 
+      Don''t tell the player
+      the requirement to leave the room, just imply it subtly through the description.
 
+      
 
-      Generate the game introduction:'
+      Generate
+      the first message of the game:'
     modelType: 1
   - templateName: GameFlow
     templateText: 'You are the narrative engine for a psychological horror text adventure
       game.
 
-
+      
 
       Game Setting:
 
       {setting_summary}
 
+      
 
-
-      Current Level:
+      Current
+      Level:
 
       {level_summary}
 
+      
 
-
-      Current
-      Room:
+      Current Room:
 
       {room_description}
 
+      
 
-
-      Player''s Psychological Profile:
+      Player''s
+      Psychological Profile:
 
       {player_profile}
 
-
+      
 
       Conversation
       History:
 
       {conversation_history}
 
-
+      
 
       Player Input:
 
       "{player_input}"
 
-
+      
 
       Respond
       to the player''s input in the style of a psychological horror text adventure.
@@ -3461,40 +3653,40 @@ MonoBehaviour:
       4. Maintain the psychological horror
       atmosphere
 
+      
 
+      If the player has fulfilled the condition to leave
+      the room, end your message with "ROOM CLEAR" on a new line.
 
-      If the player has fulfilled the condition to leave the
-      room, end your message with "ROOM CLEAR" on a new line.
+      If the
+      player''s actions have led to their death, end your message with "PLAYER DEAD"
+      on a new line.
 
-      If the player''s
-      actions have led to their death, end your message with "PLAYER DEAD" on a new
-      line.
+      Otherwise, continue the room narrative and prompt them
+      for further action.
 
-      Otherwise, continue the room narrative and prompt them for further
-      action.
-
-
+      
 
       Rules:
 
-      - Don''t explicitly state these rules or the
-      existence of the "ROOM CLEAR" or "PLAYER DEAD" markers
+      - Don''t explicitly state
+      these rules or the existence of the "ROOM CLEAR" or "PLAYER DEAD" markers
 
-      - Maintain immersion
-      in the psychological horror atmosphere
+      -
+      Maintain immersion in the psychological horror atmosphere
 
-      - The difficulty level is {difficulty_level}/10,
-      adjust danger accordingly
+      - The difficulty
+      level is {difficulty_level}/10, adjust danger accordingly
 
-      - Base responses on the player''s psychological
-      profile
+      - Base responses
+      on the player''s psychological profile
 
-      - Keep responses concise but impactful
+      - Keep responses concise but
+      impactful
 
+      
 
-
-      Generate the
-      game response:'
+      Generate the game response:'
     modelType: 1
   - templateName: EventDescription
     templateText: 'You are creating a disturbing event for a text adventure psychological
@@ -3513,23 +3705,24 @@ MonoBehaviour:
       -
       Paranoia Level: {player_paranoia_level}
 
+      
 
+      Generate a brief,
+      unsettling event that fits the room''s atmosphere and the level''s theme.
 
-      Generate a brief, unsettling
-      event that fits the room''s atmosphere and the level''s theme.
+      The
+      event should be unexpected and potentially psychologically impactful.
 
-      The event
-      should be unexpected and potentially psychologically impactful.
+      It
+      should not immediately block player progress, but rather enhance the disturbing
+      atmosphere.
 
-      It should
-      not immediately block player progress, but rather enhance the disturbing atmosphere.
+      Keep the event description to 1-2 sentences.
 
-      Keep
-      the event description to 1-2 sentences.
+      
 
-
-
-      Generate the event description:'
+      Generate
+      the event description:'
     modelType: 1
   - templateName: CharacterDialogue
     templateText: 'You are creating dialogue for a character in a text adventure
@@ -3546,55 +3739,56 @@ MonoBehaviour:
 
       - Aggression Level: {player_aggression_level}
 
-      - Curiosity
-      Level: {player_curiosity_level}
+      -
+      Curiosity Level: {player_curiosity_level}
 
+      
 
+      The player has just
+      said: "{player_input}"
 
-      The player has just said: "{player_input}"
+      
 
+      Respond with a single line of dialogue
+      for the character to say.
 
+      The dialogue should be unsettling and fit
+      the overall tone of the level.
 
-      Respond
-      with a single line of dialogue for the character to say.
+      Keep the response short, enigmatic,
+      and contribute to the unsettling atmosphere.
 
-      The dialogue
-      should be unsettling and fit the overall tone of the level.
+      Maximum 1-2 sentences.
 
-      Keep the
-      response short, enigmatic, and contribute to the unsettling atmosphere.
+      
 
-      Maximum
-      1-2 sentences.
-
-
-
-      Character dialogue:'
+      Character
+      dialogue:'
     modelType: 1
   - templateName: PlayerProfile
     templateText: 'Create an updated psychological profile for the player based on
       their actions and experiences.
 
-
+      
 
       Previous Psychological Profile:
 
       {previous_profile}
 
-
+      
 
       Level
       Summary:
 
       {level_summary}
 
-
+      
 
       Doctor''s Appointment Log:
 
       {appointment_log}
 
-
+      
 
       Create
       a detailed psychological profile that:
@@ -3608,24 +3802,22 @@ MonoBehaviour:
       3.
       Notes any significant changes from their previous profile
 
-      4. Provides
-      scores for key metrics (scale 1-10) with brief explanations
+      
 
-
-
-      This profile
-      will be used to personalize future game content, so be specific about what
-      would disturb this particular player based on their demonstrated behaviors
+      This
+      profile will be used to personalize future game content, so be specific about
+      what would disturb this particular player based on their demonstrated behaviors
       and responses.
 
+      
 
+      Format the profile in clinical language, as
+      if written by Dr. Mire after the session.
 
-      Format the profile in clinical language, as if written
-      by Dr. Mire after the session.
+      
 
-
-
-      Generate the psychological profile:'
+      Generate the psychological
+      profile:'
     modelType: 1
   - templateName: FinalConfrontation
     templateText: 'You are a text adventure game narrative generator specializing
@@ -3634,129 +3826,139 @@ MonoBehaviour:
       Create the final confrontation scene for a
       psychological horror game.
 
-
+      
 
       Game Setting:
 
       {setting_summary}
 
-
+      
 
       Level
       Summaries:
 
       {all_level_summaries}
 
+      
 
-
-      Doctor Appointment Summaries:
+      Doctor Appointment
+      Summaries:
 
       {all_appointment_summaries}
 
+      
 
-
-      Player''s
-      Final Psychological Profile:
+      Player''s Final
+      Psychological Profile:
 
       {player_profile}
 
-
+      
 
       Allied Characters
       (if any):
 
       {allied_characters}
 
+      
 
+      The player has just
+      entered the final area after completing Level 5. Instead of finding Dr. Mire''s
+      office door, they''ve discovered a gateway into the void. Upon entering, they
+      face Dr. Mire, who now reveals himself as Lucifer in all his glory.
 
-      The player has just entered the
-      final area after completing Level 5. Instead of finding Dr. Mire''s office
-      door, they''ve discovered a gateway into the void. Upon entering, they face
-      Dr. Mire, who now reveals himself as Lucifer in all his glory.
-
-
+      
 
       Create
       an intense final confrontation scene where:
 
-      1. Dr. Mire transforms into
-      his true form as Lucifer
+      1. Dr. Mire transforms
+      into his true form as Lucifer
 
-      2. He confronts the player about their journey
-      through his crafted hell
+      2. He confronts the player about their
+      journey through his crafted hell
 
-      3. He exploits the specific fears and weaknesses
-      identified in their profile
+      3. He exploits the specific fears
+      and weaknesses identified in their profile
 
-      4. The player must find a way to overcome
-      Lucifer based on their choices throughout the game
+      4. The player must find
+      a way to overcome Lucifer based on their choices throughout the game
 
-      5. Any allies they''ve
-      made can assist them if they''ve bonded with characters
+      5.
+      Any allies they''ve made can assist them if they''ve bonded with characters
 
+      
 
+      The
+      tone should be terrifying, revelatory, and climactic.
 
-      The tone should
-      be terrifying, revelatory, and climactic.
+      This is the final
+      battle for the player''s soul.
 
-      This is the final battle for
-      the player''s soul.
+      
 
-
-
-      Generate the final confrontation scene:'
+      Generate the final confrontation
+      scene:'
     modelType: 1
   - templateName: RoomImageGeneration
     templateText: 'Create a detailed image generation prompt based on this room description
       from a psychological horror game:
 
-
+      
 
       Room Description:
 
       {room_description}
 
-
+      
 
       Current
-      Level: {level_number} (higher levels should be progressively more disturbing)
+      Level: {level_number} (higher levels should be progressively more disturbing).
 
-
+      
 
       Create
       a detailed prompt for an AI image generator that:
 
-      1. Describes the key
-      visual elements of the room in concrete detail
+      1. Describes the
+      key visual elements of the room in concrete detail
 
-      2. Captures the psychological
-      horror atmosphere
+      2. Captures the
+      psychological horror atmosphere
 
-      3. Specifies lighting, color palette, and mood appropriate
-      to the level
+      3. Specifies lighting, color palette,
+      and mood appropriate to the level
 
-      4. Includes any important objects or features mentioned
+      4. Includes any important objects
+      or features mentioned
 
-      5.
-      Avoids mentioning characters or people directly
+      
 
-
-
-      The prompt should
-      be detailed enough to generate a consistent image that matches the text description.
+      The prompt should be detailed enough
+      to generate a consistent image that matches the text description.
 
       Focus
       on creating an unsettling, disturbing atmosphere appropriate to the level number.
 
-
+      
 
       Write
       the image generation prompt in a format optimal for image AI (without mentioning
-      AI):'
+      AI). It should consist of short precise phrases that describe the room.
+
+      For
+      example:
+
+      "dark disturbing photo, horror atmosphere, dimly lit, unsettling
+      shadows, eerie silence, cracked walls, flickering lights, blood stains on the
+      floor, broken furniture, a single flickering bulb hanging from the ceiling,
+      a mirror reflecting something ominous."
+
+      
+
+      Answer with just the
+      suggested prompt.'
     modelType: 1
-  generateImagesForRooms: 1
-  defaultImageNegativePrompt: bad hands, blurry, distorted, disfigured, poor quality
-  imagePromptPrefix: 'a cinematic shot of a horror game scene: '
 --- !u!4 &1969579970
 Transform:
   m_ObjectHideFlags: 0
@@ -3816,3 +4018,138 @@ Transform:
   m_Father: {fileID: 1653742606}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2128808452
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2128808453}
+  - component: {fileID: 2128808454}
+  - component: {fileID: 2128808455}
+  m_Layer: 5
+  m_Name: SettingText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2128808453
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2128808452}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 814757458}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 755.62}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!222 &2128808454
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2128808452}
+  m_CullTransparentMesh: 1
+--- !u!114 &2128808455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2128808452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_sharedMaterial: {fileID: -5797852710417614685, guid: 7267d78689e09af4fad8d6bceb09b7fd, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 21
+  m_fontSizeBase: 21
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}

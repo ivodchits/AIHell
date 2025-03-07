@@ -12,11 +12,6 @@ public class ContentGenerator : MonoBehaviour
     [SerializeField]
     List<LLMPromptTemplate> promptTemplates = new List<LLMPromptTemplate>();
     
-    [Header("Image Generation")]
-    [SerializeField] bool generateImagesForRooms = true;
-    [SerializeField] string defaultImageNegativePrompt = "bad hands, blurry, distorted, disfigured, poor quality";
-    [SerializeField] string imagePromptPrefix = "a cinematic shot of a horror game scene: ";
-    
     /// <summary>
     /// Gets a prompt template by name
     /// </summary>
@@ -409,10 +404,16 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="context">Context including setting and level summaries, and room description</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Game introduction text</returns>
-    public async Task<string> GenerateGameIntroduction(Dictionary<string, string> context, Dictionary<string, object> gameState, LLMChat chat)
+    public async Task<string> GenerateGameIntroduction(string settingSummary, string levelSummary, string roomDescription, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("GameIntroduction");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        
+        Dictionary<string, string> context = new Dictionary<string, string>();
+        context["setting_summary"] = settingSummary;
+        context["level_summary"] = levelSummary;
+        context["room_description"] = roomDescription;
+        
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
         return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }

@@ -3,6 +3,7 @@ public class GameSetting
 {
     public string fullSetting;
     public string briefSetting;
+    public string forThePlayer;
     public LevelSetting[] levels;
 
     public string Print()

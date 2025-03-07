@@ -37,6 +37,7 @@ public class Level
         Vector2Int entrancePos = new Vector2Int(Random.Range(0, width), Random.Range(0, height));
         entranceRoom = CreateRoom(entrancePos);
         entranceRoom.Type = RoomType.Entrance;
+        CurrentRoom = entranceRoom;
         
         // Use a modified depth-first search algorithm to create a maze-like structure
         Stack<Room> roomStack = new Stack<Room>();
@@ -214,6 +215,8 @@ public class Level
             }
         }
     }
+
+    public Room CurrentRoom { get; set; }
     
     public Room GetEntranceRoom()
     {

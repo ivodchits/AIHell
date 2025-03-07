@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -34,6 +35,8 @@ public class LLMManager : MonoBehaviour
     // Fallback mechanism
     [SerializeField] bool useLocalLLMFallback = true;
     [SerializeField] int maxRetryAttempts = 3;
+    
+    //TODO: a mechanism to restrict too frequent requests to Gemini
     
     // For task completion and callbacks
     class TaskCompletionSource<T>
@@ -142,8 +145,9 @@ public class LLMManager : MonoBehaviour
             }
             
             var parsedResponse = ParseLLMResponse(response, chat);
-            chat.AddEntry(new ChatEntry(isUser: false, parsedResponse));
-            return parsedResponse;
+            var formattedResponse = EscapeJsonString(parsedResponse);;
+            chat.AddEntry(new ChatEntry(isUser: false, formattedResponse));
+            return formattedResponse;
         }
         catch (Exception e)
         {
@@ -167,7 +171,7 @@ public class LLMManager : MonoBehaviour
             return "Error: Unable to generate content. Please try again later.";
         }
     }
-    
+
     /// <summary>
     /// Coroutine version of sending prompt to Gemini
     /// </summary>
@@ -191,9 +195,7 @@ public class LLMManager : MonoBehaviour
             ],
             ""generationConfig"": {{
                 ""temperature"": {geminiTemperature},
-                ""maxOutputTokens"": {maxOutputTokens},
-                ""topK"": 40,
-                ""topP"": 0.95
+                ""maxOutputTokens"": {maxOutputTokens}
             }}
         }}";
         

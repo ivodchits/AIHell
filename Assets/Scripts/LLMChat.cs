@@ -40,7 +40,7 @@ public class LLMChat
     
     public string ParseEntry(ChatEntry entry)
     {
-        var role = entry.IsUser ? "user" : LLMProvider == LLMProvider.LocalLLM ? "system" : "model";
+        var role = entry.IsUser ? "user" : LLMProvider == LLMProvider.LocalLLM ? "assistant" : "model";
         var content = LLMProvider == LLMProvider.LocalLLM
             ? $"\"content\": \"{entry.Content}\""
             : $"\"parts\": [{{\"text\": \"{entry.Content}\"}}]";

@@ -140,42 +140,45 @@ public class Logger : MonoBehaviour
     /// <summary>
     /// Logs an image reference with embedded image
     /// </summary>
-    public void LogImage(string imagePath)
+    public void LogImage(Texture2D texture)
     {
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         
         // Create HTML for embedded image
         string imageHtml;
-        if (File.Exists(imagePath))
+        if (texture != null)
         {
             try
             {
                 // Convert image to base64 for embedding
-                byte[] imageBytes = File.ReadAllBytes(imagePath);
+                byte[] imageBytes = texture.GetRawTextureData();
                 string base64Image = Convert.ToBase64String(imageBytes);
-                string imageExtension = Path.GetExtension(imagePath).ToLower().TrimStart('.');
+                string imageExtension = "png";
+                var textureName = texture.name;
+                var splitName = textureName.Split('.');
+                if (splitName.Length > 1)
+                {
+                    textureName = splitName[0];
+                }
                 
                 // Create HTML with embedded image
-                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{Path.GetFileName(imagePath)}</p>" +
-                           $"<img src='data:image/{imageExtension};base64,{base64Image}' alt='{Path.GetFileName(imagePath)}' /></div>";
+                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{textureName}</p>" +
+                           $"<img src='data:image/{imageExtension};base64,{base64Image}' alt='{textureName}' /></div>";
             }
             catch (Exception e)
             {
                 // If there's an error, just link to the image
-                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{imagePath} (Error embedding: {e.Message})</p></div>";
+                imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{texture.name} (Error embedding: {e.Message})</p></div>";
             }
         }
         else
         {
-            imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{imagePath} (File not found)</p></div>";
+            imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>(File not found)</p></div>";
         }
         
         // Add to both logs
         allLogs.Add(imageHtml);
         standardLogs.Add(imageHtml);
-        
-        // Print to console for debugging
-        Debug.Log($"[Image] {imagePath}");
     }
     
     /// <summary>

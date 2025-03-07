@@ -20,14 +20,15 @@ public class LLMPromptTemplateEditor : Editor
             @"You are a text adventure game narrative generator specializing in psychological horror.
 Create the setting and world description for a deeply unsettling psychological horror game.
 In the game the player is in hell but doesn't know it yet. They travel through a series of levels, each with its own theme and tone.
-These level are an illusion created by Dr. Cassius Mire, a psychiatrist who is actually Lucifer in disguise.
+These levels are an illusion created by Dr. Cassius Mire, a psychiatrist who is actually Lucifer in disguise.
 The purpose is to explore the player's psyche and exploit their fears.
 Get creative with the overall setting, it can be anything from an industrial complex to a space station.
 
 The setting should be vague enough to allow for personalization through gameplay, but specific enough to establish a cohesive world.
-Keep the description to 3-5 paragraphs, focusing on atmosphere rather than specific details.
+Keep the description to 3-5 paragraphs. The player won't see this description, so it can be more technical and specific.
 
 Each consecutive level will be progressively more disturbing and psychologically challenging.
+Reply with just the text of the setting description.
 
 The game setting:"
         },
@@ -60,7 +61,7 @@ Keep the description concise yet impactful, approximately 5-10 sentences.
 Highlight potentially disturbing or unusual elements within the room. The player may meet new or previously met characters here.
 
 Important: The player MUST solve something or complete some action to leave this room. Make this condition clear in the description.
-The player won't see this description, so it can be more technical and specific.
+The player won't see this description, so it can be more technical and specific. Get creative with room's content and goals.
 
 Generate the room description:"
         },
@@ -179,59 +180,53 @@ Generate the revisited room description:"
         },
         {
             "RoomSummary",
-            @"Summarize the following conversation that took place in a room in the psychological horror game:
+            @"Summarize the following interaction that took place in a room in the psychological horror game:
 
 {full_room_conversation}
 
-Create a concise summary (2-3 sentences) that captures:
-1. The key features of the room
+Create a concise summary (3-4 sentences) that captures:
+1. The key events that happened
 2. Important actions the player took
-3. Any significant events or revelations that occurred
+3. Any significant acquaintances or revelations that occurred
 
 The summary will be used for context in future game prompts, so include essential psychological elements."
         },
         {
             "LevelDescription",
             @"You are a text adventure game narrative generator specializing in psychological horror.
-Create a description for Level {level_number} of a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this level and outline the main events that will occur.
+Create a description for Act {level_number} of a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this act and outline the main events that will occur.
 
-Consider these level parameters:
-- Difficulty: {difficulty_level}/10 (higher means more challenging gameplay)
-- Horror Rating: {horror_score}/10 (higher means more disturbing content)
-- Theme: ""{level_theme}""
-- Tone: ""{level_tone}""
+- Theme of the act should be ""{level_theme}""
+- Tone of the act is ""{level_tone}""
 
-The player has just completed Level {previous_level_number} which was themed ""{previous_level_theme}"".
+The player has just completed act {previous_level_number} which was themed ""{previous_level_theme}"".
 The overall setting of the game is ""{setting_summary}"".
 
 Create a brief, atmospheric description that:
-1. Introduces the level's setting and psychological atmosphere
+1. Introduces the act's setting and psychological atmosphere
 2. Hints at what horrors might await the player
 3. Establishes the overall mood appropriate to the difficulty and horror rating
 4. Provides subtle clues about what the player might encounter
 
 Keep the description concise yet evocative, approximately 5-10 sentences.
-As the difficulty and horror score increase, the descriptions should become progressively more unsettling and foreboding.
+As the difficulty and the act number increase, the descriptions should become progressively more unsettling and foreboding.
+Reply with just the requested text of the act description.
 
-Generate the level description:"
+Act description:"
         },
         {
             "FirstLevel",
             @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the first level description for a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this level and outline the main events that will occur.
+Create the first act description for a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this act and outline the main events that will occur.
 
-Game Setting Context:
+Game Setting:
 {setting_summary}
 
-Consider these level parameters:
-- Level Number: 1
-- Difficulty: 2/10 (easier as it's the first level)
-- Horror Rating: 2/10 (slightly disturbing)
-- Theme: ""{level_theme}""
-- Tone: ""{level_tone}""
+- Theme of the act is ""{level_theme}""
+- Tone of the act is ""{level_tone}""
 
 Create a brief, atmospheric description that:
-1. Introduces the first level's setting and psychological atmosphere
+1. Introduces the first act's setting and psychological atmosphere
 2. Establishes a sense of disorientation appropriate for the beginning of the journey
 3. Hints at what horrors might await the player
 4. Establishes the overall mood appropriate to the difficulty and horror rating
@@ -239,6 +234,7 @@ Create a brief, atmospheric description that:
 
 Keep the description concise yet evocative, approximately 5-10 sentences.
 The description should be mildly unsettling, creating a feeling that something in this world is off.
+Reply with just the text of the act description.
 
 Level description:"
         },
@@ -279,6 +275,7 @@ The level should exploit the weaknesses and fears identified in the player's pro
 As this is level {level_number}, the description should be progressively more disturbing than previous levels.
 
 Keep the description concise yet evocative, approximately 5-10 sentences.
+Reply with just the text of the level description.
 
 Next level description:"
         },
@@ -332,11 +329,11 @@ Create a doctor's office scene where:
 The session should end with Dr. Mire dismissing the patient to the next level.
 Make the dialogue realistic, psychologically unsettling, and reflective of the level theme.
 
-Generate the doctor's office interaction:"
+Generate the first message of the doctor's office interaction:"
         },
         {
             "AppointmentSummary",
-            @"Summarize the following doctor's appointment from the psychological horror game:
+            @"Summarize the following interaction from the psychological horror game:
 
 {full_appointment}
 
@@ -363,15 +360,17 @@ First Room:
 
 Create an engaging introduction that:
 1. Welcomes the player to the psychological horror experience
-2. Establishes the premise that they are a patient undergoing experimental treatment
-3. Briefly introduces Dr. Cassius Mire as their supervising psychiatrist (without revealing his true identity)
-4. Transitions smoothly into the description of the first room
-5. Provides subtle hints about how to interact with the game world
+2. Transitions smoothly into the description of the first room
+3. Provides subtle hints about how to interact with the game world
 
 The introduction should be atmospheric, building tension while clearly establishing the game's premise.
-End with the room description and a prompt for the player to take their first action.
+End with the room description and a hint that the player needs to do something in order to proceed further.
 
-Generate the game introduction:"
+The player will reply with actions they want to take.
+When the player has completed the condition to leave the room, end with ""ROOM CLEAR"" on a new line.
+Don't tell the player the requirement to leave the room, just imply it subtly through the description.
+
+Generate the first message of the game:"
         },
         {
             "GameFlow",
@@ -465,7 +464,6 @@ Create a detailed psychological profile that:
 1. Assesses the player's key psychological traits (fear, paranoia, aggression, curiosity, etc.)
 2. Identifies their primary fears and weaknesses based on their choices
 3. Notes any significant changes from their previous profile
-4. Provides scores for key metrics (scale 1-10) with brief explanations
 
 This profile will be used to personalize future game content, so be specific about what would disturb this particular player based on their demonstrated behaviors and responses.
 
@@ -514,19 +512,22 @@ Generate the final confrontation scene:"
 Room Description:
 {room_description}
 
-Current Level: {level_number} (higher levels should be progressively more disturbing)
+Current Level: {level_number} (higher levels should be progressively more disturbing).
 
 Create a detailed prompt for an AI image generator that:
 1. Describes the key visual elements of the room in concrete detail
 2. Captures the psychological horror atmosphere
 3. Specifies lighting, color palette, and mood appropriate to the level
 4. Includes any important objects or features mentioned
-5. Avoids mentioning characters or people directly
 
 The prompt should be detailed enough to generate a consistent image that matches the text description.
 Focus on creating an unsettling, disturbing atmosphere appropriate to the level number.
 
-Write the image generation prompt in a format optimal for image AI (without mentioning AI):"
+Write the image generation prompt in a format optimal for image AI (without mentioning AI). It should consist of short precise phrases that describe the room.
+For example:
+""dark disturbing photo, horror atmosphere, dimly lit, unsettling shadows, eerie silence, cracked walls, flickering lights, blood stains on the floor, broken furniture, a single flickering bulb hanging from the ceiling, a mirror reflecting something ominous.""
+
+Answer with just the suggested prompt."
         }
     };
     
@@ -726,6 +727,44 @@ Write the image generation prompt in a format optimal for image AI (without ment
             
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Import Default Templates", EditorStyles.boldLabel);
+            
+            // Clear and add all default templates
+            if (GUILayout.Button("Clear and Add All Default Templates"))
+            {
+                if (EditorUtility.DisplayDialog("Confirm Clear and Replace", 
+                    "This will CLEAR ALL existing templates and add all default templates. This action cannot be undone. Are you sure?", 
+                    "Yes, Clear and Replace", "Cancel"))
+                {
+                    // Clear all existing templates
+                    promptTemplatesProperty.ClearArray();
+                    
+                    // Add all default templates
+                    foreach (var defaultTemplate in defaultTemplates)
+                    {
+                        promptTemplatesProperty.arraySize++;
+                        SerializedProperty newTemplate = promptTemplatesProperty.GetArrayElementAtIndex(promptTemplatesProperty.arraySize - 1);
+                        SerializedProperty nameProperty = newTemplate.FindPropertyRelative("templateName");
+                        SerializedProperty textProperty = newTemplate.FindPropertyRelative("templateText");
+                        SerializedProperty modelProperty = newTemplate.FindPropertyRelative("modelType");
+                        
+                        nameProperty.stringValue = defaultTemplate.Key;
+                        textProperty.stringValue = defaultTemplate.Value;
+                        modelProperty.enumValueIndex = (int)ModelType.Lite; // Default to Lite model
+                    }
+                    
+                    serializedObject.ApplyModifiedProperties();
+                    EditorUtility.SetDirty(contentGenerator);
+                    
+                    // Reset editor state
+                    selectedTemplateIndex = -1;
+                    newTemplateName = "";
+                    newTemplateText = "";
+                    
+                    EditorUtility.DisplayDialog("Templates Replaced", 
+                        $"All templates have been cleared and replaced with {defaultTemplates.Count} default templates.", 
+                        "OK");
+                }
+            }
             
             // Add default templates section
             foreach (var defaultTemplate in defaultTemplates)

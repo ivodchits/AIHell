@@ -27,7 +27,7 @@ public class LLMTest : MonoBehaviour
 
     void ShowOutput(string output)
     {
-        outputText.text = output;
+        outputText.SetText(output);
         Debug.Log($"Output generated:\n{output}");
     }
 }
