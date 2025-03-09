@@ -28,15 +28,14 @@ public class LLMManager : MonoBehaviour
     
     [Header("Rate Limiting")]
     [SerializeField]
-    float minTimeBetweenRequests = 1.0f;
+    float minTimeBetweenRequests = 4.0f;
 
     float lastRequestTime = 0f;
+    bool requestLockActive;
     
     // Fallback mechanism
     [SerializeField] bool useLocalLLMFallback = true;
     [SerializeField] int maxRetryAttempts = 3;
-    
-    //TODO: a mechanism to restrict too frequent requests to Gemini
     
     // For task completion and callbacks
     class TaskCompletionSource<T>
@@ -71,6 +70,8 @@ public class LLMManager : MonoBehaviour
         }
     }
     
+    public bool ActivateRequestLock() => requestLockActive = true;
+    
     /// <summary>
     /// Set the Gemini API key (can be used at runtime)
     /// </summary>
@@ -95,14 +96,31 @@ public class LLMManager : MonoBehaviour
         chat.AddEntry(new ChatEntry(isUser: true, processedPrompt));
         return await SendPromptToLLM(chat, retryCount);
     }
+
+    /// <summary>
+    /// Sends a prompt to the current LLM provider
+    /// </summary>
+    /// <param name="prompt">The prompt to send</param>
+    /// <param name="modelType">The model to use</param>
+    /// <returns>LLM response text</returns>
+    public async Task<string> SendPromptToLLM(ChatEntry prompt, LLMChat chat, int retryCount = 0)
+    {
+        Debug.Log($"Sending prompt to LLM (provider {chat.LLMProvider}, model type {chat.ModelType}):\n{prompt.Content}");
+        
+        chat.AddEntry(prompt);
+        return await SendPromptToLLM(chat, retryCount);
+    }
     
     async Task<string> SendPromptToLLM(LLMChat chat, int retryCount = 0)
     {
         // Rate limiting
-        float timeSinceLastRequest = Time.time - lastRequestTime;
-        if (timeSinceLastRequest < minTimeBetweenRequests)
+        if (requestLockActive && chat.LLMProvider == LLMProvider.Gemini && chat.ModelType == ModelType.Flash)
         {
-            await Task.Delay((int)((minTimeBetweenRequests - timeSinceLastRequest) * 1000));
+            float timeSinceLastRequest = Time.time - lastRequestTime;
+            if (timeSinceLastRequest < minTimeBetweenRequests)
+            {
+                await Task.Delay((int)((minTimeBetweenRequests - timeSinceLastRequest) * 1000));
+            }
         }
         
         lastRequestTime = Time.time;
@@ -185,16 +203,23 @@ public class LLMManager : MonoBehaviour
         
         // Construct the API URL with API key
         var model = Array.Find(models, m => m.modelType == chat.ModelType);
+        var temperature = chat.Temperature < 0 ? localLLMTemperature : chat.Temperature;
         var urlWithModel = geminiApiUrl + model.modelName;
-        string apiUrlWithKey = $"{urlWithModel}:generateContent?key={geminiApiKey}";
+        var apiUrlWithKey = $"{urlWithModel}:generateContent?key={geminiApiKey}";
+        var systemPrompt = string.IsNullOrEmpty(chat.SystemPrompt)
+            ? string.Empty
+            : $@"""system_instruction"": {{
+            ""parts"":
+            {{ ""text"": ""{chat.SystemPrompt}""}}}},";
         
         // Create the request payload
         string requestJson = $@"{{
+            {systemPrompt}
             ""contents"": [
                 {chat.GetChatHistoryAsString()}
             ],
             ""generationConfig"": {{
-                ""temperature"": {geminiTemperature},
+                ""temperature"": {temperature},
                 ""maxOutputTokens"": {maxOutputTokens}
             }}
         }}";
@@ -234,12 +259,17 @@ public class LLMManager : MonoBehaviour
     {
         // Create the request payload in the same format as Gemini
         var model = Array.Find(localModels, m => m.modelType == chat.ModelType);
+        var temperature = chat.Temperature < 0 ? localLLMTemperature : chat.Temperature;
+        var systemPrompt = string.IsNullOrEmpty(chat.SystemPrompt)
+            ? string.Empty
+            : $@"{{""role"": ""system"", ""content"": ""{chat.SystemPrompt}""}},";
         string requestJson = $@"{{
             ""model"": ""{model.modelName}"",
             ""messages"": [
+                {systemPrompt}
                 {chat.GetChatHistoryAsString()}
             ],
-            ""temperature"": {localLLMTemperature},
+            ""temperature"": {temperature},
             ""stream"": false
         }}";
         
@@ -327,7 +357,7 @@ public class LLMManager : MonoBehaviour
     /// <summary>
     /// Escapes a string for use in JSON
     /// </summary>
-    string EscapeJsonString(string input)
+    public string EscapeJsonString(string input)
     {
         if (string.IsNullOrEmpty(input))
         {

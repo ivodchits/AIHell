@@ -4,17 +4,21 @@ public class LLMChat
 {
     public readonly string ChatName;
     public readonly ModelType ModelType;
+    public readonly float Temperature;
     public LLMProvider LLMProvider { get; private set; }
+    
+    public string SystemPrompt { get; set; } = string.Empty;
 
     public IReadOnlyList<ChatEntry> ChatHistory => chatHistory;
     
     readonly List<ChatEntry> chatHistory = new();
     
-    public LLMChat(string chatName, LLMProvider llmProvider, ModelType modelType)
+    public LLMChat(string chatName, LLMProvider llmProvider, ModelType modelType, float temperature = -1)
     {
         ChatName = chatName;
         LLMProvider = llmProvider;
         ModelType = modelType;
+        Temperature = temperature;
     }
 
     public void AddEntry(ChatEntry entry)

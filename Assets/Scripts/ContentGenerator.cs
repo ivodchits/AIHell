@@ -138,13 +138,14 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="roomContext">Context about the room</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Room description text</returns>
-    public async Task<string> GenerateRoomDescription(int levelNumber, string levelDescription, LevelSetting levelSetting, LLMChat chat)
+    public async Task<string> GenerateRoomDescription(int levelNumber, string roomSummaries, string levelDescription, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("RoomDescription");
         
         Dictionary<string, string> context = new Dictionary<string, string>
         {
             { "level_number", levelNumber.ToString() },
+            { "previous_rooms_summary", roomSummaries },
             { "level_description", levelDescription },
             { "level_theme", levelSetting.theme },
             { "level_tone", levelSetting.tone }
@@ -317,10 +318,20 @@ public class ContentGenerator : MonoBehaviour
     /// <param name="levelContext">Context about the next level, previous levels, and player profile</param>
     /// <param name="gameState">Current game state</param>
     /// <returns>Next level description text</returns>
-    public async Task<string> GenerateNextLevelDescription(Dictionary<string, string> levelContext, Dictionary<string, object> gameState, LLMChat chat)
+    public async Task<string> GenerateNextLevelDescription(string settingSummary, string previousLevelSummary, string playerProfile, int levelNumber, LevelSetting levelSetting, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("NextLevel");
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, gameState);
+        
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "setting_summary", settingSummary },
+            { "previous_level_summary", previousLevelSummary },
+            { "player_profile", playerProfile },
+            { "level_number", levelNumber.ToString() },
+            { "level_theme", levelSetting.theme },
+            { "level_tone", levelSetting.tone }
+        };
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
         return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
@@ -330,11 +341,16 @@ public class ContentGenerator : MonoBehaviour
     /// </summary>
     /// <param name="levelContext">Context including all room summaries and doctor appointment</param>
     /// <returns>Full level summary text</returns>
-    public async Task<string> GenerateFullLevelSummary(Dictionary<string, string> levelContext, LLMChat chat)
+    public async Task<string> GenerateFullLevelSummary(string roomSummaries, string appointmentSummary, LLMChat chat)
     {
         var promptTemplate = GetPromptTemplate("FullLevelSummary");
         
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, levelContext, null);
+        Dictionary<string, string> context = new Dictionary<string, string>
+        {
+            { "room_summaries", roomSummaries },
+            { "appointment_summary", appointmentSummary }
+        };
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
         var result = await llmManager.SendPromptToLLM(finalPrompt, chat);
         
@@ -418,24 +434,24 @@ public class ContentGenerator : MonoBehaviour
         return await llmManager.SendPromptToLLM(finalPrompt, chat);
     }
     
-    /// <summary>
-    /// Processes the player's input during gameplay
-    /// </summary>
-    /// <param name="playerInput">The player's message</param>
-    /// <param name="conversationHistory">Previous conversation history</param>
-    /// <param name="gameContext">Additional game context</param>
-    /// <param name="gameState">Current game state</param>
-    /// <returns>Game response text</returns>
-    public async Task<string> GenerateGameFlowResponse(string playerInput, Dictionary<string, string> gameContext, Dictionary<string, object> gameState, LLMChat chat)
+    public async Task<string> GenerateGameFlowStart(string settingSummary, string roomDescription, LLMChat chat)
+    {
+        var finalPrompt = GetGameFlowStartMessage(settingSummary, roomDescription);
+        
+        return await llmManager.SendPromptToLLM(finalPrompt, chat);
+    }
+    
+    public string GetGameFlowStartMessage(string settingSummary, string roomDescription)
     {
         var promptTemplate = GetPromptTemplate("GameFlow");
         
-        Dictionary<string, string> context = new Dictionary<string, string>(gameContext);
-        context["player_input"] = playerInput;
+        Dictionary<string, string> context = new Dictionary<string, string>();
+        context["setting_summary"] = settingSummary;
+        context["room_description"] = roomDescription;
         
-        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, gameState);
+        string finalPrompt = FillPromptTemplate(promptTemplate.templateText, context, null);
         
-        return await llmManager.SendPromptToLLM(finalPrompt, chat);
+        return finalPrompt;
     }
     
     /// <summary>
@@ -462,20 +478,19 @@ public class ContentGenerator : MonoBehaviour
         string processedText = responseText;
         
         // Check for room clear condition
-        if (processedText.EndsWith("ROOM CLEAR") || processedText.Contains("ROOM CLEAR\n"))
+        if (processedText.EndsWith("ROOM CLEAR") || processedText.Contains("ROOM CLEAR"))
         {
-            processedText = processedText.Replace("ROOM CLEAR", "");
+            processedText = processedText.Replace("ROOM CLEAR", string.Empty);
             gameSession.CurrentGameFlowState = GameFlowState.RoomSummarization;
             Debug.Log("Room cleared detected, advancing to room summarization");
         }
         
         // Check for player death
-        if (processedText.EndsWith("PLAYER DEAD") || processedText.Contains("PLAYER DEAD\n"))
+        if (processedText.EndsWith("GAME OVER") || processedText.Contains("GAME OVER"))
         {
-            processedText = processedText.Replace("PLAYER DEAD", "");
+            processedText = processedText.Replace("GAME OVER", string.Empty);
             gameSession.IsGameOver = true;
             gameSession.CurrentGameFlowState = GameFlowState.GameOver;
-            Debug.Log("Player death detected, game over");
         }
         
         return processedText.Trim();

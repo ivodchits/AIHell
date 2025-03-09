@@ -6,6 +6,7 @@ namespace AIHell.UI
 {
     public class LoadingScreenController : UIControllerBase
     {
+        [SerializeField] GameObject pressToContinueText;
         [SerializeField] GameObject settingTextGameObject;
         [SerializeField] GameObject gradientGameObject;
         [SerializeField] TMP_Text settingText;
@@ -13,6 +14,10 @@ namespace AIHell.UI
         [SerializeField] TMP_Text progressText;
         [SerializeField] RectTransform settingTextRectTransform;
         [SerializeField] float scrollingSpeed = 5f;
+        
+        public event System.Action OnPressedToContinue;
+        
+        bool inPressToContinueState;
 
         Coroutine showingCoroutine;
         Coroutine settingTextCoroutine;
@@ -37,6 +42,14 @@ namespace AIHell.UI
             if (settingTextCoroutine == null)
             {
                 settingTextGameObject.SetActive(false);
+            }
+
+            if (percent == 100)
+            {
+                UpdatePercentage(-1);
+                loadingText.text = string.Empty;
+                pressToContinueText.SetActive(true);
+                inPressToContinueState = true;
             }
         }
 
@@ -74,6 +87,7 @@ namespace AIHell.UI
                 settingTextCoroutine = null;
             }
             
+            pressToContinueText.SetActive(false);
             settingTextGameObject.SetActive(false);
             canvasGroup.alpha = 0;
         }
@@ -84,6 +98,11 @@ namespace AIHell.UI
             while (true)
             {
                 yield return null;
+                if (inPressToContinueState)
+                {
+                    loadingText.text = string.Empty;
+                    yield break;
+                }
                 timer += Time.deltaTime;
                 loadingText.text = $"Loading{new string('.', Mathf.FloorToInt(timer) % 3 + 1)}";
             }
@@ -103,6 +122,16 @@ namespace AIHell.UI
             settingTextRectTransform.anchoredPosition = Vector2.zero;
             gradientGameObject.SetActive(false);
             ShowingText = false;
+        }
+
+        void Update()
+        {
+            if (inPressToContinueState && Input.GetKeyDown(KeyCode.Space))   
+            {
+                inPressToContinueState = false;
+                pressToContinueText.SetActive(false);
+                OnPressedToContinue?.Invoke();
+            }
         }
 
         void UpdatePercentage(int percent)

@@ -15,12 +15,10 @@ public class GameSession
     
     // Current level data
     public string CurrentLevelDescription { get; set; }
-    public string CurrentLevelSummary { get; set; }
     
     // Room tracking
     public string CurrentRoomDescription { get; set; }
-    public Dictionary<Vector2Int, CompletedRoomData> VisitedRooms { get; set; } = new ();
-    public List<string> GameFlowHistory { get; set; } = new List<string>();
+    public Dictionary<Vector2Int, CompletedRoomData> VisitedRooms { get; private set; } = new ();
     public int RoomsCleared { get; set; } = 0;
     
     // Level progression data
@@ -28,7 +26,7 @@ public class GameSession
     public List<string> AppointmentSummaries { get; set; } = new List<string>();
     
     // Player data
-    public PlayerProfile PlayerProfile { get; set; } = new PlayerProfile();
+    public string PlayerProfile { get; set; } = string.Empty;
     
     // Game state flags
     public bool IsInDoctorsOffice { get; set; } = false;
@@ -45,23 +43,16 @@ public class GameSession
     public GameFlowState CurrentGameFlowState { get; set; } = GameFlowState.PreGame;
     public RoomType CurrentRoomType { get; set; } = RoomType.None;
     public string CurrentRoomImagePrompt { get; set; }
+    public Texture2D CurrentRoomImage { get; set; }
     public bool HasInitialIntroduction { get; set; } = false;
-    
+
     public GameSession()
     {
         // Initialize with default values
         LevelSummaries = new List<string>();
         AppointmentSummaries = new List<string>();
         VisitedRooms = new();
-        GameFlowHistory = new List<string>();
         CurrentConversation = new List<string>();
-        PlayerProfile = new PlayerProfile();
-    }
-    
-    public void ResetGameFlow()
-    {
-        CurrentConversation.Clear();
-        CurrentGameFlowPrompt = string.Empty;
     }
     
     public void AdvanceToNextLevel()
@@ -69,23 +60,29 @@ public class GameSession
         CurrentLevel++;
         RoomsCleared = 0;
         VisitedRooms.Clear();
-        GameFlowHistory.Clear();
         CurrentRoomDescription = string.Empty;
-        ResetGameFlow();
         IsInDoctorsOffice = false;
         IsInExitRoom = false;
         CurrentGameFlowState = GameFlowState.LevelGeneration;
-        CurrentRoomType = RoomType.None;
+        SetCurrentRoomType(RoomType.Entrance);
     }
     
-    public void AddRoomSummary(Room room, string summary, string revisitDescription)
+    public void AddRoomSummary(Room room, string summary, Texture2D image)
     {
         VisitedRooms.Add(room.Position, new CompletedRoomData
         {
             RoomSummary = summary,
-            RevisitDescription = revisitDescription
+            RoomImage = image
         });
         RoomsCleared++;
+    }
+    
+    public void SetRoomRevisitDescription(Room room, string revisitDescription)
+    {
+        if (VisitedRooms.TryGetValue(room.Position, out var visitedRoom))
+        {
+            visitedRoom.RevisitDescription = revisitDescription;
+        }
     }
     
     /// <summary>
@@ -98,6 +95,18 @@ public class GameSession
         IsInExitRoom = (roomType == RoomType.Exit);
         IsInDoctorsOffice = (roomType == RoomType.DoctorOffice);
     }
+
+    public string GetRoomSummaries()
+    {
+        var result = string.Empty;
+        var counter = 1;
+        foreach (var roomData in VisitedRooms.Values)
+        {
+            result += $"{counter++}. {roomData.RoomSummary}\n";
+        }
+
+        return result;
+    }
 }
 
 [Serializable]
@@ -105,50 +114,7 @@ public class CompletedRoomData
 {
     public string RoomSummary;
     public string RevisitDescription;
-}
-
-/// <summary>
-/// Represents the player's psychological profile
-/// </summary>
-[Serializable]
-public class PlayerProfile
-{
-    // Core attributes
-    public string AggressionLevel { get; set; } = "low";
-    public string CuriosityLevel { get; set; } = "moderate";
-    public string FearLevel { get; set; } = "low";
-    public string ParanoiaLevel { get; set; } = "minimal";
-    
-    // Additional profiling data
-    public List<string> IdentifiedFears { get; set; } = new List<string>();
-    public List<string> IdentifiedWeaknesses { get; set; } = new List<string>();
-    public List<string> IdentifiedTraits { get; set; } = new List<string>();
-    
-    // Character relationships
-    public Dictionary<string, float> CharacterRelationships { get; set; } = new Dictionary<string, float>();
-    
-    // Full textual profile
-    public string FullProfile { get; set; } = "Player is cautious but curious. No significant psychological issues identified.";
-    
-    public PlayerProfile()
-    {
-        IdentifiedFears = new List<string>();
-        IdentifiedWeaknesses = new List<string>();
-        IdentifiedTraits = new List<string>();
-        CharacterRelationships = new Dictionary<string, float>();
-    }
-    
-    public Dictionary<string, string> ToContextDictionary()
-    {
-        return new Dictionary<string, string>
-        {
-            { "player_aggression_level", AggressionLevel },
-            { "player_curiosity_level", CuriosityLevel },
-            { "player_fear_level", FearLevel },
-            { "player_paranoia_level", ParanoiaLevel },
-            { "player_profile", FullProfile }
-        };
-    }
+    public Texture2D RoomImage;
 }
 
 /// <summary>
@@ -157,9 +123,9 @@ public class PlayerProfile
 public enum GameFlowState
 {
     PreGame,
-    SettingSummarization,
+    SettingCreation,
     LevelGeneration,
-    LevelSummarization,
+    RoomSelection,
     RoomGeneration,
     RoomImageGeneration,
     GameFlow,

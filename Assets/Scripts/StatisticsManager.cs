@@ -45,7 +45,7 @@ public class StatisticsManager : MonoBehaviour
     /// <returns>Number of prompt tokens, or 0 if category doesn't exist</returns>
     public int GetPromptTokens(string chatName)
     {
-        return _promptTokensByCategory.ContainsKey(chatName) ? _promptTokensByCategory[chatName] : 0;
+        return _promptTokensByCategory.GetValueOrDefault(chatName, 0);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class StatisticsManager : MonoBehaviour
     /// <returns>Number of response tokens, or 0 if category doesn't exist</returns>
     public int GetResponseTokens(string chatName)
     {
-        return _responseTokensByCategory.ContainsKey(chatName) ? _responseTokensByCategory[chatName] : 0;
+        return _responseTokensByCategory.GetValueOrDefault(chatName, 0);
     }
 
     /// <summary>

@@ -151,7 +151,7 @@ public class Logger : MonoBehaviour
             try
             {
                 // Convert image to base64 for embedding
-                byte[] imageBytes = texture.GetRawTextureData();
+                byte[] imageBytes = texture.EncodeToPNG();
                 string base64Image = Convert.ToBase64String(imageBytes);
                 string imageExtension = "png";
                 var textureName = texture.name;
@@ -163,7 +163,7 @@ public class Logger : MonoBehaviour
                 
                 // Create HTML with embedded image
                 imageHtml = $"<div class='log-entry image'><span class='timestamp'>[{timestamp}]</span> <strong>[IMAGE]</strong> <p>{textureName}</p>" +
-                           $"<img src='data:image/{imageExtension};base64,{base64Image}' alt='{textureName}' /></div>";
+                           $"<img src='data:image/{imageExtension};base64, {base64Image}', alt='{textureName}' /></div>";
             }
             catch (Exception e)
             {

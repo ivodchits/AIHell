@@ -17,17 +17,13 @@ public class LLMPromptTemplateEditor : Editor
     {
         {
             "GameSetting",
-            @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the setting and world description for a deeply unsettling psychological horror game.
-In the game the player is in hell but doesn't know it yet. They travel through a series of levels, each with its own theme and tone.
-These levels are an illusion created by Dr. Cassius Mire, a psychiatrist who is actually Lucifer in disguise.
-The purpose is to explore the player's psyche and exploit their fears.
-Get creative with the overall setting, it can be anything from an industrial complex to a space station.
+            @"Create the setting and world description for a deeply unsettling psychological horror game.
+In the game the player is in hell but doesn't know it yet. They travel through a series of levels, each with its own theme and tone, though connected to each other through this setting.
 
 The setting should be vague enough to allow for personalization through gameplay, but specific enough to establish a cohesive world.
+It can be a facility, a town, a city, or any other location that can be explored. Make it original and unique.
 Keep the description to 3-5 paragraphs. The player won't see this description, so it can be more technical and specific.
 
-Each consecutive level will be progressively more disturbing and psychologically challenging.
 Reply with just the text of the setting description.
 
 The game setting:"
@@ -51,10 +47,6 @@ Here is the level description:
 
 Here is what happened in the rooms before:
 {previous_rooms_summary}
-
-Considering the player's psychological profile, which currently indicates:
-- Aggression Level: {player_aggression_level}
-- Curiosity Level: {player_curiosity_level}
 
 Describe this room in detail, focusing on contents and events happening in the room.
 Keep the description concise yet impactful, approximately 5-10 sentences.
@@ -103,11 +95,6 @@ Room Archetype: ""{room_archetype}""
 
 Previous rooms in this level:
 {previous_rooms_summary}
-
-The player's psychological profile currently indicates:
-- Fear Level: {player_fear_level}
-- Paranoia Level: {player_paranoia_level}
-- Aggression Level: {player_aggression_level}
 
 Create a detailed room description that:
 1. Builds upon the established atmosphere of the level
@@ -184,12 +171,12 @@ Generate the revisited room description:"
 
 {full_room_conversation}
 
-Create a concise summary (3-4 sentences) that captures:
+Create a concise summary (1-3 sentences) that captures:
 1. The key events that happened
 2. Important actions the player took
 3. Any significant acquaintances or revelations that occurred
 
-The summary will be used for context in future game prompts, so include essential psychological elements."
+The summary will be used for context in future game prompts, so include all the important details."
         },
         {
             "LevelDescription",
@@ -216,25 +203,21 @@ Act description:"
         },
         {
             "FirstLevel",
-            @"You are a text adventure game narrative generator specializing in psychological horror.
-Create the first act description for a psychological horror game about submerging deeper and deeper into the player's subconsciousness. Come up with a vague narrative for this act and outline the main events that will occur.
+@"Create the plan for the first act for a psychological horror game about submerging deeper and deeper into the player's subconsciousness.
+Come up with a vague narrative for this act and outline the main events that will occur.
+It should go along with the established game setting.
 
 Game Setting:
 {setting_summary}
 
-- Theme of the act is ""{level_theme}""
-- Tone of the act is ""{level_tone}""
-
-Create a brief, atmospheric description that:
-1. Introduces the first act's setting and psychological atmosphere
-2. Establishes a sense of disorientation appropriate for the beginning of the journey
-3. Hints at what horrors might await the player
-4. Establishes the overall mood appropriate to the difficulty and horror rating
-5. Provides subtle clues about what the player might encounter
+Create a brief plan for the act that:
+1. Takes place in the established setting
+2. Gradually introduces the player to the psychological horror elements
+3. Sets the tone for the entire game
+4. Covers the main events that will occur in this act, or characters that will be met
 
 Keep the description concise yet evocative, approximately 5-10 sentences.
-The description should be mildly unsettling, creating a feeling that something in this world is off.
-Reply with just the text of the act description.
+Reply with just the text of the act plan.
 
 Level description:"
         },
@@ -248,42 +231,41 @@ Create a concise summary (2-3 sentences) that captures the essential theme, tone
         },
         {
             "NextLevel",
-            @"Here is what happened in the previous level:
-{previous_level_summary}
+            @"Generate a description for the next act in a psychological horror game.
+The game setting:
+{setting_summary}
 
-At the end of the level the player was confronted by Dr. Cassius Mire, who is actually Lucifer in disguise.
-Here is the summary of their appointment:
-{previous_appointment_summary}
+Here is what happened in the previous act:
+{previous_level_summary}
 
 Player's Psychological Profile:
 {player_profile}
 
-Consider these level parameters:
-- Level Number: {level_number}
-- Difficulty: {difficulty_level}/10 (increases with each level)
-- Horror Rating: {horror_score}/10 (increases with each level)
+Consider these act's parameters:
+- Act Number: {level_number}
 - Theme: ""{level_theme}""
 - Tone: ""{level_tone}""
 
-Create a brief, atmospheric description of the next level that:
+Create a plan of the next act that:
 1. Introduces new level's setting and psychological atmosphere
-2. Builds upon the psychological journey established in previous levels
+2. Builds upon the psychological journey established in previous acts and takes into account what happened during the doctor appointment
 3. Incorporates elements from the player's psychological profile, especially their fears and weaknesses
 4. Establishes a more intense challenge appropriate to the increased difficulty
+5. Outlines main events that will occur in this act, or characters that will be met
 
-The level should exploit the weaknesses and fears identified in the player's profile.
-As this is level {level_number}, the description should be progressively more disturbing than previous levels.
+The act should exploit the weaknesses and fears identified in the player's profile.
+As this is act {level_number}, the description should be progressively more disturbing than previous acts.
 
-Keep the description concise yet evocative, approximately 5-10 sentences.
+Keep the description concise yet evocative, approximately 7-14 sentences.
 Reply with just the text of the level description.
 
-Next level description:"
+Next act description:"
         },
         {
             "FullLevelSummary",
-            @"Create a comprehensive summary of the player's experience in Level {level_number}.
+            @"Create a comprehensive summary of the player's experience.
 
-Room Summaries:
+Summaries of what happened in each room:
 {room_summaries}
 
 Doctor's Appointment Summary:
@@ -295,6 +277,7 @@ Create a concise but complete summary (10-30 sentences) that captures:
 3. Significant revelations or character encounters
 4. How the doctor's appointment concluded the level
 
+Include as many details of the appointment as possible.
 This summary will be used to inform future game content, so highlight elements that reflect the player's psychological state and potential weaknesses."
         },
         {
@@ -338,7 +321,7 @@ Generate the first message of the doctor's office interaction:"
 {full_appointment}
 
 Create a concise summary (3-5 sentences) that captures:
-1. Dr. Mire's assessment and attitude toward the player
+1. Dr. Mire's assessment
 2. Key psychological insights revealed about the player
 3. Any significant warnings or ominous statements made
 
@@ -379,37 +362,14 @@ Generate the first message of the game:"
 Game Setting:
 {setting_summary}
 
-Current Level:
-{level_summary}
-
 Current Room:
 {room_description}
-
-Player's Psychological Profile:
-{player_profile}
-
-Conversation History:
-{conversation_history}
-
-Player Input:
-""{player_input}""
 
 Respond to the player's input in the style of a psychological horror text adventure. Your response should:
 1. Acknowledge the player's action
 2. Describe the consequences in rich, atmospheric detail
 3. Advance the narrative based on their choices
 4. Maintain the psychological horror atmosphere
-
-If the player has fulfilled the condition to leave the room, end your message with ""ROOM CLEAR"" on a new line.
-If the player's actions have led to their death, end your message with ""PLAYER DEAD"" on a new line.
-Otherwise, continue the room narrative and prompt them for further action.
-
-Rules:
-- Don't explicitly state these rules or the existence of the ""ROOM CLEAR"" or ""PLAYER DEAD"" markers
-- Maintain immersion in the psychological horror atmosphere
-- The difficulty level is {difficulty_level}/10, adjust danger accordingly
-- Base responses on the player's psychological profile
-- Keep responses concise but impactful
 
 Generate the game response:"
         },
@@ -524,6 +484,7 @@ The prompt should be detailed enough to generate a consistent image that matches
 Focus on creating an unsettling, disturbing atmosphere appropriate to the level number.
 
 Write the image generation prompt in a format optimal for image AI (without mentioning AI). It should consist of short precise phrases that describe the room.
+Don't include minor details, concentrate on the most important elements of the room.
 For example:
 ""dark disturbing photo, horror atmosphere, dimly lit, unsettling shadows, eerie silence, cracked walls, flickering lights, blood stains on the floor, broken furniture, a single flickering bulb hanging from the ceiling, a mirror reflecting something ominous.""
 

@@ -1,29 +1,38 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using AIHell.UI;
 using UnityEngine;
-using UnityEngine.UI; // Added for UI components
 
-public class LevelVisualizer : MonoBehaviour
+public class LevelVisualizer : UIControllerBase
 {
     [SerializeField] LevelGenerator levelGenerator;
-    [SerializeField] RectTransform contentParent; // Changed to RectTransform for UI
-    [SerializeField] GameObject roomPrefab;
-    [SerializeField] GameObject entrancePrefab;
-    [SerializeField] GameObject exitPrefab;
+    [SerializeField] RectTransform contentParent;
+    [SerializeField] RoomView roomPrefab;
+    [SerializeField] RoomView entrancePrefab;
+    [SerializeField] RoomView exitPrefab;
     [SerializeField] GameObject doorPrefab;
-    [SerializeField] GameObject playerMarkerPrefab; // Added: Player marker prefab
-    [SerializeField] Color currentRoomHighlightColor = Color.yellow; // Added: Color to highlight current room
-    [SerializeField] float roomSpacing = 100f; // Increased spacing for UI scale
+    [SerializeField] GameObject playerMarkerPrefab;
+    [SerializeField] GameObject roomSelection;
+    [SerializeField] float roomSpacing = 40f; // Increased spacing for UI scale
+    [SerializeField] float flashingFrequency = 1f; // Frequency of flashing effect
+    
+    public event Action<Room> RoomSelected;
+    
+    const float maxFlashingAlpha = 0.6f; // Maximum alpha for flashing effect
 
-    Dictionary<Vector2Int, GameObject> roomObjects = new Dictionary<Vector2Int, GameObject>();
-    List<GameObject> doorObjects = new List<GameObject>();
-    GameObject playerMarker; // Added: Reference to player marker object
-    Vector2Int currentPlayerPosition; // Added: Tracks current player position
-    Room currentPlayerRoom; // Added: Reference to current player room
+    Dictionary<Vector2Int, RoomView> roomObjects = new ();
+    List<GameObject> doorObjects = new ();
+    List<RoomView> flashingRooms = new ();
+    GameObject playerMarker;
+    Vector2Int currentPlayerPosition;
+    Room currentPlayerRoom;
+    RoomView currentlySelectedRoom;
+    float currentAlpha = maxFlashingAlpha;
+    bool doctorOfficeAvailable = false;
     
     // Reference to the current level being visualized
     Level currentLevel;
-    
+
     // Call this to visualize the current level
     public void VisualizeCurrentLevel()
     {
@@ -56,11 +65,11 @@ public class LevelVisualizer : MonoBehaviour
     public void ClearVisualization()
     {
         // Destroy all room objects
-        foreach (GameObject room in roomObjects.Values)
+        foreach (var room in roomObjects.Values)
         {
             if (room != null)
             {
-                DestroyImmediate(room);
+                DestroyImmediate(room.gameObject);
             }
         }
         roomObjects.Clear();
@@ -91,7 +100,7 @@ public class LevelVisualizer : MonoBehaviour
         foreach (Room room in currentLevel.GetAllRooms())
         {
             Vector2 roomPosition = new Vector2(room.Position.x * roomSpacing, room.Position.y * roomSpacing);
-            GameObject roomObject = null;
+            RoomView roomObject = null;
             
             // Use appropriate prefab based on room type
             switch (room.Type)
@@ -114,6 +123,8 @@ public class LevelVisualizer : MonoBehaviour
             
             if (roomObject != null)
             {
+                roomObject.Initialize(room);
+                roomObject.Hide();
                 // Set the UI position using RectTransform
                 RectTransform rectTransform = roomObject.GetComponent<RectTransform>();
                 if (rectTransform != null)
@@ -186,7 +197,7 @@ public class LevelVisualizer : MonoBehaviour
         Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
         Vector2 max = new Vector2(float.MinValue, float.MinValue);
         
-        foreach (GameObject room in roomObjects.Values)
+        foreach (var room in roomObjects.Values)
         {
             RectTransform rectTransform = room.GetComponent<RectTransform>();
             if (rectTransform != null)
@@ -205,7 +216,7 @@ public class LevelVisualizer : MonoBehaviour
         Vector2 center = (min + max) / 2f;
         
         // Offset all objects to center them at (0,0)
-        foreach (GameObject room in roomObjects.Values)
+        foreach (var room in roomObjects.Values)
         {
             RectTransform rectTransform = room.GetComponent<RectTransform>();
             if (rectTransform != null)
@@ -235,25 +246,9 @@ public class LevelVisualizer : MonoBehaviour
         currentPlayerRoom = room;
         currentPlayerPosition = room.Position;
         
-        // Reset previous room highlight if any
-        foreach (GameObject roomObj in roomObjects.Values)
-        {
-            Image roomImage = roomObj.GetComponent<Image>();
-            if (roomImage != null)
-            {
-                roomImage.color = Color.white; // Reset to default color
-            }
-        }
-        
         // Highlight the current room
-        if (roomObjects.TryGetValue(currentPlayerPosition, out GameObject currentRoomObj))
+        if (roomObjects.TryGetValue(currentPlayerPosition, out var currentRoomObj))
         {
-            Image roomImage = currentRoomObj.GetComponent<Image>();
-            if (roomImage != null)
-            {
-                roomImage.color = currentRoomHighlightColor;
-            }
-            
             // Update or create player marker
             if (playerMarker == null && playerMarkerPrefab != null)
             {
@@ -320,6 +315,111 @@ public class LevelVisualizer : MonoBehaviour
         else
         {
             Debug.LogError($"LevelVisualizer: Could not set level index to {levelIndex}!");
+        }
+    }
+
+    public void RevealRoom(Room room)
+    {
+        roomObjects[room.Position].Show();
+    }
+
+    public void FlashAdjacentRooms(Room currentRoom)
+    {
+        doctorOfficeAvailable = currentRoom.Type == RoomType.Exit;
+        var connections = currentRoom.Connections;
+        foreach (var room in connections.Values)
+        {
+            if (roomObjects.TryGetValue(room.Position, out var roomView))
+            {
+                roomView.Flash();
+                flashingRooms.Add(roomView);
+            }
+        }
+    }
+
+    public override void Show()
+    {
+        base.Show();
+        roomSelection.SetActive(false);
+    }
+
+    void Update()
+    {
+        if (flashingRooms.Count == 0)
+        {
+            return;
+        }
+        
+        var newAlpha = Mathf.PingPong(currentAlpha + Time.deltaTime * flashingFrequency, maxFlashingAlpha);
+        currentAlpha = newAlpha;
+        foreach (var roomView in flashingRooms)
+        {
+            roomView.SetAlpha(currentAlpha + 0.2f);
+        }
+        
+        var horizontalInput = Input.GetAxis("Horizontal");
+        var verticalInput = Input.GetAxis("Vertical");
+        if (horizontalInput > Mathf.Epsilon || horizontalInput < -Mathf.Epsilon)
+        {
+            var direction = horizontalInput > 0 ? Direction.East : Direction.West;
+            if (currentPlayerRoom.Connections.TryGetValue(direction, out var nextRoom))
+            {
+                MoveSelection(nextRoom.Position);
+            }
+        }
+        else if (verticalInput > Mathf.Epsilon || verticalInput < -Mathf.Epsilon)
+        {
+            var direction = verticalInput > 0 ? Direction.North : Direction.South;
+            if (currentPlayerRoom.Connections.TryGetValue(direction, out var nextRoom))
+            {
+                MoveSelection(nextRoom.Position);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && doctorOfficeAvailable)
+        {
+            var room = new Room(Vector2Int.zero);
+            room.Type = RoomType.DoctorOffice;
+            SelectRoom(room);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            SelectRoom(currentlySelectedRoom.Room);
+        }
+    }
+
+    void SelectRoom(Room room)
+    {
+        foreach (var flashingRoom in flashingRooms)
+        {
+            flashingRoom.SetAlpha(1);
+            if (!flashingRoom.Room.Visited)
+            {
+                flashingRoom.Hide();
+            }
+        }
+        flashingRooms.Clear();
+        currentlySelectedRoom = null;
+        roomSelection.SetActive(false);
+        
+        RoomSelected?.Invoke(room);
+    }
+
+    void MoveSelection(Vector2Int selectedRoomPosition)
+    {
+        if (roomObjects.TryGetValue(selectedRoomPosition, out var roomView))
+        {
+            currentlySelectedRoom = roomView;
+            roomSelection.transform.position = roomView.transform.position;
+            if (!roomSelection.activeSelf)
+            {
+                roomSelection.SetActive(true);
+            }
+        }
+        else
+        {
+            roomSelection.SetActive(false);
         }
     }
 }

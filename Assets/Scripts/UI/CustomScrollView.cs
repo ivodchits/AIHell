@@ -104,5 +104,13 @@ namespace AIHell.UI
                 scrollRect.normalizedPosition += new Vector2(0, value / scrollRect.content.rect.height * scrollRect.scrollSensitivity);
             }
         }
+
+        public void ScrollDown()
+        {
+            if (scrollRect != null)
+            {
+                scrollRect.normalizedPosition = Vector2.zero;
+            }
+        }
     }
 }

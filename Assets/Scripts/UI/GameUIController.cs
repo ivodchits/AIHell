@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ namespace AIHell.UI
         [SerializeField] CanvasGroup chatCanvasGroup;
         [SerializeField] RawImage image;
         [SerializeField] CanvasGroup imageCanvasGroup;
+        [SerializeField] GameObject pressToContinueText;
         [SerializeField] float fadeinDuration = 2f;
         [SerializeField] float fadeoutDuration = 3f;
         [SerializeField] float typingSpeed = 20f;
@@ -22,7 +24,11 @@ namespace AIHell.UI
         [SerializeField] float tvNoiseMin = 0.1f;
         [SerializeField] float tvNoiseAdjustmentDuration = 2f;
         
+        public event Action<string> OnUserInput;
+        public event Action OnPressedToContinue;
+
         bool isCurrentlyTyping = false;
+        bool isInPressToContinueState = false;
         string fullText = string.Empty;
         Coroutine typingCoroutine;
         
@@ -30,6 +36,7 @@ namespace AIHell.UI
         
         public void PlayShowingAnimation(LLMChat initialChat, bool skipFirstMessage)
         {
+            fullText = string.Empty;
             chatText.SetText(string.Empty);
             inputField.text = string.Empty;
             
@@ -53,13 +60,13 @@ namespace AIHell.UI
             StartCoroutine(FadeIn());
         }
         
-        public void PlayHidingAnimation()
+        public void PlayHidingAnimation(Action onFinished)
         {
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
             inputField.text = string.Empty;
             
-            StartCoroutine(FadeOut());
+            StartCoroutine(FadeOut(onFinished));
         }
         
         public void AddMessage(ChatEntry entry)
@@ -67,6 +74,7 @@ namespace AIHell.UI
             if (entry.IsUser)
             {
                 SetTextInstantly(fullText + "\n\n-You: " + PrepareText(entry.Content));
+                scrollView.ScrollDown();
             }
             else
             {
@@ -78,17 +86,25 @@ namespace AIHell.UI
         {
             image.texture = texture;
         }
+
+        public void EnterPressToContinueState()
+        {
+            isInPressToContinueState = true;
+            inputField.text = string.Empty;
+            inputFieldCanvasGroup.alpha = 0;
+            pressToContinueText.SetActive(true);
+        }
         
         string PrepareText(string text)
         {
-            return text.Replace("\\n", "\n");
+            return text.Replace("\\n", "\n").Replace("\\\"", "\"");
         }
 
         void AddMessage(string rawText)
         {
             var text = PrepareText(rawText);
             var startIndex = fullText.Length;
-            fullText += text;
+            fullText += "\n\n" + text;
 
             // Add the message with invisible text initially
             string invisibleText = $"<color=#00000000>{text}";
@@ -171,6 +187,11 @@ namespace AIHell.UI
             
             imageCanvasGroup.alpha = 1;
             Show();
+
+            while (image.texture == null)
+            {
+                yield return null;
+            }
             
             var noiseIntensity = tvNoiseMax;
             while(noiseIntensity > tvNoiseMin)
@@ -182,7 +203,7 @@ namespace AIHell.UI
             image.material.SetFloat(noiseMaterialPropertyId, tvNoiseMin);
         }
 
-        IEnumerator FadeOut()
+        IEnumerator FadeOut(Action onFinished)
         {
             while (canvasGroup.alpha > 0)
             {
@@ -191,8 +212,13 @@ namespace AIHell.UI
             }
             
             Hide();
+            
+            image.material.SetFloat(noiseMaterialPropertyId, tvNoiseMax);
+
             chatText.SetText(string.Empty);
             inputField.text = string.Empty;
+            
+            onFinished?.Invoke();
         }
 
         void Update()
@@ -202,10 +228,17 @@ namespace AIHell.UI
                 return;
             }
             
-            if (Input.GetKeyDown(KeyCode.Return) && !isCurrentlyTyping)
+            if (Input.GetKeyDown(KeyCode.Return) && !isCurrentlyTyping && !isInPressToContinueState)
             {
                 EnterPressed();
                 inputField.ActivateInputField();
+            }
+
+            if (isInPressToContinueState && Input.GetKeyDown(KeyCode.Space))
+            {
+                isInPressToContinueState = false;
+                pressToContinueText.SetActive(false);
+                PlayHidingAnimation(() => OnPressedToContinue?.Invoke());
             }
             
             if (Input.mouseScrollDelta != Vector2.zero)
@@ -223,7 +256,7 @@ namespace AIHell.UI
 
         void EnterPressed()
         {
-            AddMessage(new ChatEntry(true, inputField.text));
+            OnUserInput?.Invoke(inputField.text);
             inputField.text = string.Empty;
         }
     }
